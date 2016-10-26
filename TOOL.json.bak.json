@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "name": "rewgt/shadow-book/summary",
+    "opt": "mono/none",
+    "baseUrl": "/app/rewgt/shadow-widget/output",
+    "tools": []
+  },
+  
+  "content": {
+    "name": "rewgt/shadow-book/content",
+    "opt": "mono/none",
+    "baseUrl": "/app/rewgt/shadow-widget/output",
+    "tools": []
+  },
+  
+  "top": {
+    "name": "rewgt/shadow-book/top",
+    "opt": "mono/none",
+    "baseUrl": "/app/rewgt/shadow-widget/output",
+    "tools": []
+  }
+}
