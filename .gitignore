@@ -10,3 +10,5 @@ node_modules
 # product specifics
 
 *.bak
+
+bundle.js
