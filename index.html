@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta property="pinp:template" page="Panel" content="/app/files/rewgt/web/templates/Panel">
+<meta property="pinp:template" page="P" content="/app/files/rewgt/web/templates/P">
+<meta property="pinp:template" page="Span" content="/app/files/rewgt/web/templates/Span">
+<meta property="pinp:template" page="Linker" content="/app/files/rewgt/web/templates/Linker">
+<meta property="pinp:template" page="Nav" content="/app/files/rewgt/web/templates/Nav">
+<meta property="pinp:template" page="Md" content="/app/files/rewgt/web/hint_marked.html">
+<title>shadow-widget sample</title>
+</head>
+<body>
+
+<!-- BEGIN OF CONTAINER, DO NOT CHANGE THIS LINE. -->
+<div id="react-container" style="visibility:hidden; position:absolute; left:0px; top:0px">
+<div :t=BodyPanel key='body' style='{{"background":"rgb(216, 216, 216) none repeat scroll 0% 0%"}}' klass="hidden-visible-auto">
+  <div :t=ScenePage>
+    <div :t=P data-prepost="6-3-5-3-1" top='{20}' left='{-77}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{67}'>
+      <span :t=Span>example</span>
+    </div>
+    <div :t=Div style='{{"zIndex":"-1"}}' data-prepost="2-3-0-3-1" top='{-15}' left='{24}' klass="default-large-small default-align_center-right" width='{175}'>
+      <div class='rewgt-static'><ul style="background:#ccc">
+          <li>item 1</li>
+          <li>item 2</li>
+          <li>item 3</li>
+        </ul></div>
+    </div>
+    <div :t=P data-prepost="12-3-0-3-1" width='{77}' klass="default-large-small visible-auto-hidden default-align_center-right" left='{-16}' top='{-24}'>
+      <span :t=Span>Paragraph</span>
+    </div>
+  </div>
+  <div :t=ScenePage>
+    <div :t=P top='{-28}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='1-3-0-3-1'>
+      <span :t=Span>Page 2</span>
+    </div>
+    <div :t=P top='{-2}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='0-3-5-3-1'>
+      <span :t=Span>Page 2</span>
+    </div>
+    <div :t=P top='{22}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='0-3-7-3-1'>
+      <span :t=Span>Page 2</span>
+    </div>
+  </div>
+  <div :t=ScenePage>
+    <div :t=P width='{400}' klass="default-large-small visible-auto-hidden default-align_center-right" left='{-19}' top='{-19}'>
+      <span :t=Span>Page 3</span>
+    </div>
+    <div :t=Div style='{{"zIndex":"-1"}}' data-prepost="2-3-0-3-1" top='{-15}' left='{24}' klass="default-large-small default-align_center-right" width='{175}'>
+      <div class='rewgt-static'><ul class="translucent-default build">
+        <li>item 1</li>
+        <li>item 2</li>
+        <li>item 3</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- END OF CONTAINER, DO NOT CHANGE THIS LINE. -->
+
+<script>
+if (!window.W) { window.W = new Array(); W.$modules = [];}
+W.$modules.push( function(require,module,exports) {
+
+var React = require('react');
+var ReactDOM = require('react-dom');
+
+var W = require('shadow-widget');
+var main = W.$main, utils = W.$utils, ex = W.$ex;
+
+});
+</script>
+
+<link rel="stylesheet" shared="true" href="/app/rewgt/shadow-slide/web/output/base.css" />
+<link rel="stylesheet" shared="true" href="/app/rewgt/shadow-slide/web/output/slide_style.css" />
+<script src="bundle.js"></script>
+
+</body>
+</html>

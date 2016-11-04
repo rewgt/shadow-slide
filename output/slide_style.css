@@ -1,0 +1,159 @@
+// slide_style.css
+
+body {
+  -webkit-touch-callout: none;
+  
+  tap-highlight-color: transparent;
+  -o-tap-highlight-color: transparent;
+  -moz-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent;
+  
+  -webkit-font-smoothing: antialiased;
+  -moz-font-smoothing: antialiased;
+  -ms-font-smoothing: antialiased;
+  -o-font-smoothing: antialiased;
+}
+
+article.rewgt-scene {
+  background-color: white;
+
+  -o-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+
+  border-radius: 10px;
+  -o-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+
+  border: 0px solid rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: left 0.4s ease-out;
+}
+
+.wdgt-pgctrl {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAXBAMAAADJv2OxAAAAMFBMVEX///+ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZnHHh8xAAAAD3RSTlMAESIzRFVmd4iZqrvM3e5GKvWZAAAAdElEQVQI12NgAAH2v2CKsf83mJb8vxBEMe3/KQCitf83gLn3n4Flff8FgCjW90/A3Pw/BiBK4v0lMHf+bwUw/R/CZVj/SwBq5kaIQD1UAfv7yxCBuH8OYJrl/VWIgM3/AjDNdP45REDq/0SI+9b/gghw/AUAn68l+4HFkZUAAAAASUVORK5CYII=");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.wdgt-pgctrl.right {
+  -o-transform: scaleX(-1);
+  -moz-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  -ms-transform: scaleX(-1);
+  transform:scaleX(-1);
+}
+
+.prebuild-1 {
+  -webkit-transition: all 0.4s ease-out;
+  -moz-transition: all 0.4s ease-out;
+  -ms-transition: all 0.4s ease-out;
+  -o-transition: all 0.4s ease-out;
+  transition: all 0.4s ease-out;
+}
+.prebuild-2 {
+  -webkit-transition: all 0.7s ease-out;
+  -moz-transition: all 0.7s ease-out;
+  -ms-transition: all 0.7s ease-out;
+  -o-transition: all 0.7s ease-out;
+  transition: all 0.7s ease-out;
+}
+.prebuild-3 {
+  -webkit-transition: all 1s ease-out;
+  -moz-transition: all 1s ease-out;
+  -ms-transition: all 1s ease-out;
+  -o-transition: all 1s ease-out;
+  transition: all 1s ease-out;
+}
+.prebuild-4 {
+  -webkit-transition: all 1.6s ease-out;
+  -moz-transition: all 1.6s ease-out;
+  -ms-transition: all 1.6s ease-out;
+  -o-transition: all 1.6s ease-out;
+  transition: all 1.6s ease-out;
+}
+.prebuild-5 {
+  -webkit-transition: all 2.8s ease-out;
+  -moz-transition: all 2.8s ease-out;
+  -ms-transition: all 2.8s ease-out;
+  -o-transition: all 2.8s ease-out;
+  transition: all 2.8s ease-out;
+}
+
+.postbuild-1 {
+  -webkit-transition: all 0.4s ease-in;
+  -moz-transition: all 0.4s ease-in;
+  -ms-transition: all 0.4s ease-in;
+  -o-transition: all 0.4s ease-in;
+  transition: all 0.4s ease-in;
+}
+.postbuild-2 {
+  -webkit-transition: all 0.7s ease-in;
+  -moz-transition: all 0.7s ease-in;
+  -ms-transition: all 0.7s ease-in;
+  -o-transition: all 0.7s ease-in;
+  transition: all 0.7s ease-in;
+}
+.postbuild-3 {
+  -webkit-transition: all 1s ease-in;
+  -moz-transition: all 1s ease-in;
+  -ms-transition: all 1s ease-in;
+  -o-transition: all 1s ease-in;
+  transition: all 1s ease-in;
+}
+.postbuild-4 {
+  -webkit-transition: all 1.6s ease-in;
+  -moz-transition: all 1.6s ease-in;
+  -ms-transition: all 1.6s ease-in;
+  -o-transition: all 1.6s ease-in;
+  transition: all 1.6s ease-in;
+}
+.postbuild-5 {
+  -webkit-transition: all 2.8s ease-in;
+  -moz-transition: all 2.8s ease-in;
+  -ms-transition: all 2.8s ease-in;
+  -o-transition: all 2.8s ease-in;
+  transition: all 2.8s ease-in;
+}
+
+.build > * {
+  -o-transition: opacity 0.5s ease-in-out 0.2s;
+  -moz-transition: opacity 0.5s ease-in-out 0.2s;
+  -webkit-transition: opacity 0.5s ease-in-out 0.2s;
+  -ms-transition: opacity 0.5s ease-in-out 0.2s;
+  transition: opacity 0.5s ease-in-out 0.2s;
+}
+.build > .to-build {
+  opacity: 0;
+}
+.translucent-default.build > .to-build {
+  opacity: 0.4;
+}
+
+#react-container.no-trans article.rewgt-scene {
+  -o-transition: none;
+  -moz-transition: none;
+  -webkit-transition: none;
+  -ms-transition: none;
+  transition: none;
+}
+
+#react-container.no-ground article.rewgt-scene {
+  background-color: rgba(0,0,0,0);
+}
+
+#react-container[__design__="1"] article.rewgt-scene,
+#react-container.no-frame article.rewgt-scene,
+article.rewgt-scene.no-frame {
+  overflow: visible;
+  
+  border-radius: 0px;
+  -o-border-radius: 0px;
+  -moz-border-radius: 0px;
+  -webkit-border-radius: 0px;
+  
+  border: 0px none transparent;
+  box-shadow: none;
+  transition: none;
+}

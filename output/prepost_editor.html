@@ -1,0 +1,686 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>Config pre-post step for widget</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+<script type='text/cse' line='7'>
+#include "h5lib.h";
+
+namespace H5:
+
+return super(window as H5Window):
+  document as window->document;
+  apiNode as document.getElementById("api-node");
+
+  apiNode.setHook("setCloseState", super(isOk):
+    hostWin as window.hostWin();
+    hostWin->closeState = isOk? 1: 2;
+    if isOk:
+      hostWin->sPrePost = JSB(document)..getPrePostData();
+    end;
+  end);
+end;
+
+end;
+</script>
+
+<script type="text/javascript">
+
+var currPreIndex  = 0;
+var currPostIndex = 0;
+var currPreSpeed  = 3;
+var currPostSpeed = 3;
+
+var WEB_BROWSER_TYPE = '';
+var WEB_BROWSER_VER  = '';
+var TRANS_CSS_NAME   = 'transform';
+var TRANS_END_FUNC   = 'transitionend';
+
+(function() {
+  var sUA = navigator.userAgent.toLowerCase();
+  var m = sUA.match(/trident.*rv[ :]*([\d.]+)/); // >= IE11, can not use sUA.match(/msie ([\d.]+)/)
+  if (m) {
+    if (parseFloat(m[1]) >= 11.0) {
+      WEB_BROWSER_TYPE = 'ie'; WEB_BROWSER_VER = m[1];
+      TRANS_END_FUNC = 'MSTransitionEnd'; TRANS_CSS_NAME = '-ms-transform'; // 'transform' or 'msTransform' can work also
+    }
+  } else {
+    m = sUA.match(/firefox\/([\d.]+)/);
+    if (m) {
+      WEB_BROWSER_TYPE = 'firefox'; WEB_BROWSER_VER = m[1];
+      TRANS_END_FUNC = 'transitionend'; TRANS_CSS_NAME = 'transform';
+    } else {
+      m = sUA.match(/chrome\/([\d.]+)/);
+      if (m) {
+        WEB_BROWSER_TYPE = 'chrome'; WEB_BROWSER_VER = m[1];
+        TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = '-webkit-transform';
+      }
+      else {
+        m = sUA.match(/opera.([\d.]+)/);
+        if (m) {
+          WEB_BROWSER_TYPE = 'opera'; WEB_BROWSER_VER = m[1];
+          TRANS_END_FUNC = 'oTransitionEnd'; TRANS_CSS_NAME = 'transform';
+        }
+        else {
+          m = sUA.match(/safari\/([\d.]+)/);
+          if (m) {
+            WEB_BROWSER_TYPE = 'safari'; WEB_BROWSER_VER = m[1];
+            TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = '-webkit-transform';
+          }
+          else {
+            m = sUA.match(/webkit\/([\d.]+)/);
+            if (m) {  // webkit kernel, iPad ...
+              WEB_BROWSER_TYPE = 'webkit'; WEB_BROWSER_VER = m[1];
+              TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = '-webkit-transform';
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  if (WEB_BROWSER_TYPE == '' || WEB_BROWSER_VER == '') {
+    if (sUA.match(/msie ([\d.]+)/))
+      console.log('!fatal error: IE version too low, please use IE11 or higher');
+    else console.log('!fatal error: unknown web browser type'); // only support firefox/chrome/safari/opera/IE
+  }
+})();
+
+function refreshPreStyle() {
+  var divNode = document.getElementById('demo-img');
+  if (currPreIndex == 0) {
+    divNode.style.marginLeft = '';
+    divNode.style.marginTop = '';
+    divNode.style.opacity = '';
+    divNode.style[TRANS_CSS_NAME] = '';
+  }
+  else {
+    // step 1: reset state
+    divNode.className = '';
+    divNode.style.zIndex = '100';
+    divNode.style.marginLeft = '';
+    divNode.style.marginTop = '';
+    divNode.style.opacity = '';
+    divNode.style[TRANS_CSS_NAME] = '';
+    
+    // step 2: prepare pre-hidden-state
+    var sZIndex = '100';
+    if (currPreIndex <= 4) {
+      if (currPreIndex == 1) {
+        divNode.style.marginTop = '-190px';  // -110 - 80
+      }
+      else if (currPreIndex == 2) {
+        divNode.style.marginLeft = '190px';  // 110 + 80
+      }
+      else if (currPreIndex == 3) {
+        divNode.style.marginTop = '190px';
+      }
+      else { // currPreIndex == 4
+        divNode.style.marginLeft = '-190px';
+      }
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex <= 8) {
+      if (currPreIndex == 5) {
+        divNode.style.marginLeft = '190px';
+        divNode.style.marginTop = '-190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(-215deg) scale(0.2,0.2)';
+      }
+      else if (currPreIndex == 6) {
+        divNode.style.marginLeft = '190px';
+        divNode.style.marginTop = '190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(215deg) scale(0.2,0.2)';
+      }
+      else if (currPreIndex == 7) {
+        divNode.style.marginLeft = '-190px';
+        divNode.style.marginTop = '190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(-215deg) scale(0.2,0.2)';
+      }
+      else { // currPreIndex == 8
+        divNode.style.marginLeft = '-190px';
+        divNode.style.marginTop = '-190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(215deg) scale(0.2,0.2)';
+      }
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 9) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.1,0.1)';
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 10) {
+      divNode.style[TRANS_CSS_NAME] = 'rotate(1800deg) scale(0.1,0.1)';
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 11) {
+      sZIndex = '102';
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 12) {
+      sZIndex = '98';
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 13) {
+      sZIndex = '100';
+      divNode.style.opacity = '0';
+    }
+    else if (currPreIndex == 14) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.6,0.6)';
+    }
+    else if (currPreIndex == 15) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.8,0.8)';
+    }
+    else if (currPreIndex == 16) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(1.2,1.2)';
+    }
+    else if (currPreIndex == 17) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(1.4,1.4)';
+    }
+
+    // step 3: animate: restore to default state
+    setTimeout( function() {
+      divNode.className = 'prebuild-' + currPreSpeed;
+      divNode.style.zIndex = sZIndex;
+      divNode.style.marginLeft = '';
+      divNode.style.marginTop = '';
+      divNode.style.opacity = '';
+      divNode.style[TRANS_CSS_NAME] = '';
+    },200);
+  }
+}
+
+function setPreTagValue(event) {
+  var node = event.target;
+  if (node.nodeName != 'INPUT') return;
+  
+  var sId = node.id, b=sId.split('-');
+  currPreIndex = parseInt(b[1]);
+  
+  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
+  for (var i=0,item; item = nodes[i]; i++) {
+    if (item === node)
+      item.checked = true;
+    else item.checked = false;
+  }
+  refreshPreStyle();
+}
+
+function setPreSpeed(event) {
+  var node = event.target;
+  if (node.nodeName != 'INPUT') return;
+  
+  var sId=node.id, b=sId.split('-');
+  currPreSpeed = parseInt(b[1]);
+
+  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
+  for (var i=0,item; item = nodes[i]; i++) {
+    if (item === node)
+      item.checked = true;
+    else item.checked = false;
+  }
+  
+  refreshPreStyle();
+}
+
+function onPrePostFinish(event) {
+  var divNode = event.target;
+  divNode.removeEventListener(TRANS_END_FUNC,onPrePostFinish);
+  divNode.className = '';
+  
+  setTimeout( function() {
+    divNode.style.zIndex = '100';
+    divNode.style.marginLeft = '';
+    divNode.style.marginTop = '';
+    divNode.style.opacity = '';
+    divNode.style[TRANS_CSS_NAME] = '';
+  },1500);
+}
+
+function refreshPostStyle() {
+  var divNode = document.getElementById('demo-img');
+  if (currPostIndex == 0) {
+    divNode.style.zIndex = '100';
+    divNode.style.marginLeft = '';
+    divNode.style.marginTop = '';
+    divNode.style.opacity = '';
+    divNode.style[TRANS_CSS_NAME] = '';
+  }
+  else {
+    // step 1: reset state
+    divNode.className = '';
+    divNode.style.zIndex = '100';
+    divNode.style.marginLeft = '';
+    divNode.style.marginTop = '';
+    divNode.style.opacity = '';
+    divNode.style[TRANS_CSS_NAME] = '';
+    
+    // step 2: set postbuild class
+    divNode.className = 'postbuild-' + currPostSpeed;
+    divNode.addEventListener(TRANS_END_FUNC,onPrePostFinish,false);
+    
+    // step 3: action
+    if (currPostIndex <= 4) {
+      if (currPostIndex == 1) {
+        divNode.style.marginTop = '-190px';  // -110 - 80
+      }
+      else if (currPostIndex == 2) {
+        divNode.style.marginLeft = '190px';  // 110 + 80
+      }
+      else if (currPostIndex == 3) {
+        divNode.style.marginTop = '190px';
+      }
+      else { // currPostIndex == 4
+        divNode.style.marginLeft = '-190px';
+      }
+      divNode.style.opacity = '0';
+    }
+    else if (currPostIndex <= 8) {
+      if (currPostIndex == 5) {
+        divNode.style.marginLeft = '190px';
+        divNode.style.marginTop = '-190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(-215deg) scale(0.2,0.2)';
+      }
+      else if (currPostIndex == 6) {
+        divNode.style.marginLeft = '190px';
+        divNode.style.marginTop = '190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(215deg) scale(0.2,0.2)';
+      }
+      else if (currPostIndex == 7) {
+        divNode.style.marginLeft = '-190px';
+        divNode.style.marginTop = '190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(-215deg) scale(0.2,0.2)';
+      }
+      else { // currPostIndex == 8
+        divNode.style.marginLeft = '-190px';
+        divNode.style.marginTop = '-190px';
+        divNode.style[TRANS_CSS_NAME] = 'rotate(215deg) scale(0.2,0.2)';
+      }
+      divNode.style.opacity = '0';
+    }
+    else if (currPostIndex == 9) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.1,0.1)';
+      divNode.style.opacity = '0';
+    }
+    else if (currPostIndex == 10) {
+      divNode.style[TRANS_CSS_NAME] = 'rotate(1800deg) scale(0.1,0.1)';
+      divNode.style.opacity = '0';
+    }
+    else if (currPostIndex == 11) {
+      divNode.style.zIndex = '102';
+    }
+    else if (currPostIndex == 12) {
+      divNode.style.zIndex = '98';
+    }
+    else if (currPostIndex == 13) {
+      divNode.style.zIndex = '100';
+    }
+    else if (currPostIndex == 14) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.6,0.6)';
+    }
+    else if (currPostIndex == 15) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(0.8,0.8)';
+    }
+    else if (currPostIndex == 16) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(1.2,1.2)';
+    }
+    else if (currPostIndex == 17) {
+      divNode.style[TRANS_CSS_NAME] = 'scale(1.4,1.4)';
+    }
+  }
+}
+
+function setPostTagValue(event) {
+  var node = event.target;
+  if (node.nodeName != 'INPUT') return;
+  
+  var sId=node.id, b=sId.split('-');
+  currPostIndex = parseInt(b[1]);
+  
+  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
+  for (var i=0,item; item = nodes[i]; i++) {
+    if (item === node)
+      item.checked = true;
+    else item.checked = false;
+  }
+  
+  refreshPostStyle();
+}
+
+function setPostSpeed(event) {
+  var node = event.target;
+  if (node.nodeName != 'INPUT') return;
+  
+  var sId=node.id, b=sId.split('-');
+  currPostSpeed = parseInt(b[1]);
+  
+  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
+  for (var i=0,item; item = nodes[i]; i++) {
+    if (item === node)
+      item.checked = true;
+    else item.checked = false;
+  }
+  
+  refreshPostStyle();
+}
+
+function getPrePostData() {
+  var sJoin = document.getElementById('joinPrev').checked? '1': '0';
+  if (currPreIndex == 0) {
+    if (currPostIndex == 0)
+      return '';
+    else return '0-' + currPreSpeed + '-' + currPostIndex + '-' + currPostSpeed + '-' + sJoin;
+  }
+  else {
+    if (currPostIndex == 0)
+      return currPreIndex + '-' + currPreSpeed + '-0-0-' + sJoin;
+    else return currPreIndex + '-' + currPreSpeed + '-' + currPostIndex + '-' + currPostSpeed + '-' + sJoin;
+  }
+}
+
+function finishEditing(isOk) {
+  var apiNode = document.getElementById('api-node');
+  apiNode.setCloseState(isOk);
+  window.close();
+}
+
+function initPrePost(sFlag,canPlay) {
+  if (canPlay) {
+    document.getElementById('pre-play').style.display = 'block';
+    document.getElementById('post-play').style.display = 'block';
+  }
+  
+  if (sFlag) {
+    var b = sFlag.split('-');
+    if (b.length >= 2) {
+      var i1 = parseInt(b[0]);
+      var node1 = document.getElementById('pre-' + i1);
+      if (node1) { node1.checked = true; currPreIndex = i1; }
+      
+      var i2 = parseInt(b[1]);
+      var node2 = document.getElementById('prespeed-' + i2);
+      if (node2) {
+        node2.checked = true; currPreSpeed = i2;
+        if (i2 != 3) {
+          var tmpNode = document.getElementById('prespeed-3');
+          if (tmpNode) tmpNode.checked = false;
+        }
+      }
+    }
+    
+    if (b.length >= 4) {
+      var i3 = parseInt(b[2]);
+      var node3 = document.getElementById('post-' + i3);
+      if (node3) { node3.checked = true; currPostIndex = i3; }
+      
+      var i4 = parseInt(b[3]);
+      var node4 = document.getElementById('postspeed-' + i4);
+      if (node4) {
+        node4.checked = true; currPostSpeed = i4;
+        if (i4 != 3) {
+          var tmpNode = document.getElementById('postspeed-3');
+          if (tmpNode) tmpNode.checked = false;
+        }
+      }
+    }
+    
+    if (b.length >= 5 && b[4] == '1') {  // join previous
+      document.getElementById('joinPrev').checked = true;
+    }
+    
+    if (currPreIndex > 0)
+      document.getElementById('pre-0').checked = false;
+    if (currPostIndex > 0)
+      document.getElementById('post-0').checked = false;
+  }
+}
+</script>
+
+<style>
+body {
+  margin: 0px;
+  padding: 0px;
+  overflow: auto;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.noselect-txt {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+table.prepost {
+  margin: 0px;
+  padding: 2px;
+  border: 0px solid gray;
+  border-spacing: 0px;
+  border-collapse: collapse;
+}
+table.prepost td {
+  border: 1px solid gray;
+  padding: 4px;
+}
+div.slide-page {
+  border: 1px solid gray;
+  margin-left: 10px;
+  width: 300px;
+  height: 300px;
+  
+  overflow: hidden;
+}
+
+div.prebuild-1 {
+  -webkit-transition: all 0.4s ease-out;
+  -moz-transition: all 0.4s ease-out;
+  -ms-transition: all 0.4s ease-out;
+  -o-transition: all 0.4s ease-out;
+  transition: all 0.4s ease-out;
+}
+div.prebuild-2 {
+  -webkit-transition: all 0.7s ease-out;
+  -moz-transition: all 0.7s ease-out;
+  -ms-transition: all 0.7s ease-out;
+  -o-transition: all 0.7s ease-out;
+  transition: all 0.7s ease-out;
+}
+div.prebuild-3 {
+  -webkit-transition: all 1s ease-out;
+  -moz-transition: all 1s ease-out;
+  -ms-transition: all 1s ease-out;
+  -o-transition: all 1s ease-out;
+  transition: all 1s ease-out;
+}
+div.prebuild-4 {
+  -webkit-transition: all 1.6s ease-out;
+  -moz-transition: all 1.6s ease-out;
+  -ms-transition: all 1.6s ease-out;
+  -o-transition: all 1.6s ease-out;
+  transition: all 1.6s ease-out;
+}
+div.prebuild-5 {
+  -webkit-transition: all 2.8s ease-out;
+  -moz-transition: all 2.8s ease-out;
+  -ms-transition: all 2.8s ease-out;
+  -o-transition: all 2.8s ease-out;
+  transition: all 2.8s ease-out;
+}
+
+div.postbuild-1 {
+  -webkit-transition: all 0.4s ease-in;
+  -moz-transition: all 0.4s ease-in;
+  -ms-transition: all 0.4s ease-in;
+  -o-transition: all 0.4s ease-in;
+  transition: all 0.4s ease-in;
+}
+div.postbuild-2 {
+  -webkit-transition: all 0.7s ease-in;
+  -moz-transition: all 0.7s ease-in;
+  -ms-transition: all 0.7s ease-in;
+  -o-transition: all 0.7s ease-in;
+  transition: all 0.7s ease-in;
+}
+div.postbuild-3 {
+  -webkit-transition: all 1s ease-in;
+  -moz-transition: all 1s ease-in;
+  -ms-transition: all 1s ease-in;
+  -o-transition: all 1s ease-in;
+  transition: all 1s ease-in;
+}
+div.postbuild-4 {
+  -webkit-transition: all 1.6s ease-in;
+  -moz-transition: all 1.6s ease-in;
+  -ms-transition: all 1.6s ease-in;
+  -o-transition: all 1.6s ease-in;
+  transition: all 1.6s ease-in;
+}
+div.postbuild-5 {
+  -webkit-transition: all 2.8s ease-in;
+  -moz-transition: all 2.8s ease-in;
+  -ms-transition: all 2.8s ease-in;
+  -o-transition: all 2.8s ease-in;
+  transition: all 2.8s ease-in;
+}
+</style>
+</head>
+
+<body class='noselect-txt'>
+<div id='api-node' style='display:none; visibility:hidden;'></div>
+
+<table style='width:100%; margin:0px; padding:2px; border:0px solid gray; border-spacing:0px;'>
+<tr><td><p id='hint-text'></p></td>
+  <td style='min-width:150px'>
+    <p style='text-align:right'>
+    <input type='button' style='width:60px' value='OK' onclick='finishEditing(true)' />
+    <input type='button' style='width:70px' value='Cancel' onclick='finishEditing(false)' />
+    </p>
+  </td></tr>
+</table>
+
+<table class='prepost'>
+<tr style='text-align:center'>
+  <td style='width:145px'><b>pre-step</b></td>
+  <td rowspan='8' style='width:320px; text-align:left'>
+    <div class='slide-page'>
+      <div style='background:rgba(255,0,0,0.3); z-index:99; position:relative; width:300px; height:300px'></div>
+      <div style='background:rgba(0,255,0,0.3); border:0px solid gray; border-top-width:1px; z-index:101; position:relative; top:-150px; width:300px; height:150px'></div>
+      <div id='demo-img' style='z-index:100; position:relative; left:110px; top:-340px; width:80px; height:80px'>
+        <img style='width:100%; height:100%' src='smile.ico' />
+      </div>
+    </div>
+  </td>
+  <td style='width:145px'><b>post-step</b></td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-0' checked='checked'><label for='pre-0'>disable</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-0' checked='checked'><label for='post-0'>disable</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-1'><label for='pre-1'>from top</label><br>
+    <input type='checkbox' id='pre-2'><label for='pre-2'>from right</label><br>
+    <input type='checkbox' id='pre-3'><label for='pre-3'>from bottom</label><br>
+    <input type='checkbox' id='pre-4'><label for='pre-4'>from left</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-1'><label for='post-1'>to top</label><br>
+    <input type='checkbox' id='post-2'><label for='post-2'>to right</label><br>
+    <input type='checkbox' id='post-3'><label for='post-3'>to bottom</label><br>
+    <input type='checkbox' id='post-4'><label for='post-4'>to left</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-5'><label for='pre-5'>top-right</label><br>
+    <input type='checkbox' id='pre-6'><label for='pre-6'>bottom-right</label><br>
+    <input type='checkbox' id='pre-7'><label for='pre-7'>bottom-left</label><br>
+    <input type='checkbox' id='pre-8'><label for='pre-8'>top-left</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-5'><label for='post-5'>top-right</label><br>
+    <input type='checkbox' id='post-6'><label for='post-6'>bottom-right</label><br>
+    <input type='checkbox' id='post-7'><label for='post-7'>bottom-left</label><br>
+    <input type='checkbox' id='post-8'><label for='post-8'>top-left</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-9'><label for='pre-9'>fade in</label><br>
+    <input type='checkbox' id='pre-10'><label for='pre-10'>rotate in</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-9'><label for='post-9'>fade out</label><br>
+    <input type='checkbox' id='post-10'><label for='post-10'>rotate out</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-11'><label for='pre-11'>pop topmost</label><br>
+    <input type='checkbox' id='pre-12'><label for='pre-12'>push bottom</label><br>
+    <input type='checkbox' id='pre-13'><label for='pre-13'>restore</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-11'><label for='post-11'>pop topmost</label><br>
+    <input type='checkbox' id='post-12'><label for='post-12'>push bottom</label><br>
+    <input type='checkbox' id='post-13'><label for='post-13'>restore</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <input type='checkbox' id='pre-14'><label for='pre-14'>scale from 0.6</label><br>
+    <input type='checkbox' id='pre-15'><label for='pre-15'>scale from 0.8</label><br>
+    <input type='checkbox' id='pre-16'><label for='pre-16'>scale from 1.2</label><br>
+    <input type='checkbox' id='pre-17'><label for='pre-17'>scale from 1.4</label>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <input type='checkbox' id='post-14'><label for='post-14'>scale to 0.6</label><br>
+    <input type='checkbox' id='post-15'><label for='post-15'>scale to 0.8</label><br>
+    <input type='checkbox' id='post-16'><label for='post-16'>scale to 1.2</label><br>
+    <input type='checkbox' id='post-17'><label for='post-17'>scale to 1.4</label>
+  </td>
+</tr>
+
+<tr>
+  <td onclick='setPreTagValue(event)'>
+    <div id='pre-play' style='display:none'><input type='checkbox' id='pre-18'><label for='pre-18'>play</label></div>
+  </td>
+  <td onclick='setPostTagValue(event)'>
+    <div id='post-play' style='display:none'><input type='checkbox' id='post-19'><label for='post-19'>continue</label></div>
+  </td>
+</tr>
+
+<tr>
+  <td style='outline:#666 solid 2px' onclick='setPreSpeed(event)'>
+    <input type='checkbox' id='prespeed-1'><label for='prespeed-1'>fastest</label><br>
+    <input type='checkbox' id='prespeed-2'><label for='prespeed-2'>faster</label><br>
+    <input type='checkbox' id='prespeed-3' checked='checked'><label for='prespeed-3'>normal</label><br>
+    <input type='checkbox' id='prespeed-4'><label for='prespeed-4'>slower</label><br>
+    <input type='checkbox' id='prespeed-5'><label for='prespeed-5'>slowest</label><br>
+  </td>
+  <td>
+    <input type='checkbox' id='joinPrev' /><label for='joinPrev'>join to previous step</label>
+  </td>
+  <td style='outline:#666 solid 2px' onclick='setPostSpeed(event)'>
+    <input type='checkbox' id='postspeed-1'><label for='postspeed-1'>fastest</label><br>
+    <input type='checkbox' id='postspeed-2'><label for='postspeed-2'>faster</label><br>
+    <input type='checkbox' id='postspeed-3' checked='checked'><label for='postspeed-3'>normal</label><br>
+    <input type='checkbox' id='postspeed-4'><label for='postspeed-4'>slower</label><br>
+    <input type='checkbox' id='postspeed-5'><label for='postspeed-5'>slowest</label>
+  </td>
+</tr>
+
+</table>
+
+</body>
+</html>
