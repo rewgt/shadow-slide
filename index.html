@@ -2,77 +2,863 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta property="pinp:template" page="Panel" content="/app/files/rewgt/web/templates/Panel">
-<meta property="pinp:template" page="P" content="/app/files/rewgt/web/templates/P">
-<meta property="pinp:template" page="Span" content="/app/files/rewgt/web/templates/Span">
-<meta property="pinp:template" page="Linker" content="/app/files/rewgt/web/templates/Linker">
-<meta property="pinp:template" page="Nav" content="/app/files/rewgt/web/templates/Nav">
+<meta property="pinp:template" page="slide" content="/app/rewgt/shadow-slide/web/output/shared">
 <meta property="pinp:template" page="Md" content="/app/files/rewgt/web/hint_marked.html">
-<title>shadow-widget sample</title>
+<title>Shadow Slide Sample</title>
+
 </head>
-<body>
+<body style="color:#222">
 
 <!-- BEGIN OF CONTAINER, DO NOT CHANGE THIS LINE. -->
 <div id="react-container" style="visibility:hidden; position:absolute; left:0px; top:0px">
-<div :t=BodyPanel key='body' style='{{"background":"rgb(216, 216, 216) none repeat scroll 0% 0%"}}' klass="hidden-visible-auto">
-  <div :t=ScenePage>
-    <div :t=P data-prepost="6-3-5-3-1" top='{20}' left='{-77}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{67}'>
-      <span :t=Span>example</span>
+<div $=BodyPanel key='body' style='{{"backgroundColor":"rgb(216, 216, 216)"}}' klass='S5 hidden-visible-auto'>
+  <div $=ScenePage key='auto0' klass='S4'>
+    <div $=NavDiv key='config' style='{{"display":"none","border":"0px dashed #ccc"}}' klass='S6 hidden-visible-auto' border-width='{1}' left='{-0.5}' top='{-0.5}' width='{150}' $id__='config' title='Config document type'>
+      <div $=P margin='{0}'>
+        <span $=Select><span $=OptOption key='slide' data-checked='1' value='slide'>Slide</span>
+          <span $=OptOption key='blog' value='blog'>Blog</span>
+          <span $=OptOption key='slideshow' value='slideshow'>Slideshow</span>
+          <span $=OptOption key='other' value='other'>Other</span>
+        </span>
+      </div>
+      <pre $=Pre key='pre'>size=900x700
+autoplay=0
+page=0</pre>
     </div>
-    <div :t=Div style='{{"zIndex":"-1"}}' data-prepost="2-3-0-3-1" top='{-15}' left='{24}' klass="default-large-small default-align_center-right" width='{175}'>
-      <div class='rewgt-static'><ul style="background:#ccc">
-          <li>item 1</li>
-          <li>item 2</li>
-          <li>item 3</li>
-        </ul></div>
+    <pre $=MarkedDiv key='mark' height='{300}' width='{500}' klass='default-large-small p1-p2-p3-p0 auto-hidden-visible S5' left='{-250}' top='{-150}' data-group.optid='rewgt/shadow-slide/step0' padding='{8}'>Shadow Slide
+------------
+
+Create your presentation documents easily using this simple and powerful editor.
+
+- <a target="_blank" href="/app/rewgt/shadow-slide/web/sample.html">Show sample slide</a>
+
+- <a target="_blank" href="/app/rewgt/shadow-slide/web/output/doc/doc_zh/">Read user manual</a>
+
+</pre>
+  </div>
+  <div $=ScenePage key='auto1' klass='S4'>
+    <div $=H2 key='auto0' left='{-300}' top='{-70}' width='{600}' klass='default-large-small visible-auto-hidden align_center-right-default' data-group.optid='rewgt/shadow-slide/steps'>
+      <span $=Span>Title Goes Here Up</span>
     </div>
-    <div :t=P data-prepost="12-3-0-3-1" width='{77}' klass="default-large-small visible-auto-hidden default-align_center-right" left='{-16}' top='{-24}'>
-      <span :t=Span>Paragraph</span>
+    <div $=P key='auto1' width='{400}' klass='S4 small-default-large p1-p2-p3-p0 default-align_center-right visible-auto-hidden' left='{-190}' top='{30}' data-group.optid='rewgt/shadow-slide/steps'>
+      <span $=Span>Author: Your name</span>
+      <span $=Br></span>
+      <span $=Span>Dec 1, 2016</span>
     </div>
   </div>
-  <div :t=ScenePage>
-    <div :t=P top='{-28}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='1-3-0-3-1'>
-      <span :t=Span>Page 2</span>
+  <div $=ScenePage key='auto2' klass='S4'>
+    <div $=Panel key='auto0' style='{{"backgroundColor":"#cccccc","borderColor":"#cccccc","opacity":"0.9"}}' klass='round_mask-big default-round2-round0 solid-dotted-dashed no_shadow-lb-rb-rt-lt visible-auto-hidden' border-width='{0}' height='{80}' width='{160}' top='{-100}' left='{-180}' data-group.optid='rewgt/shadow-slide/step1'>
+      <pre $=MarkedDiv style='{{"color":"white"}}' width='{0.9999}' klass='S4 small-default-large align_center-right-default p1-p2-p3-p0 self_center-start-end-stretch-default'>Text</pre>
     </div>
-    <div :t=P top='{-2}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='0-3-5-3-1'>
-      <span :t=Span>Page 2</span>
+    <div $=Panel key='auto1' style='{{"opacity":"0.9"}}' klass='round_mask-big default-round2-round0 solid-dotted-dashed no_shadow-lb-rb-rt-lt visible-auto-hidden' height='{80}' width='{160}' top='{-100}' left='{40}' data-group.optid='rewgt/shadow-slide/step1'>
+      <div $=Panel style='{{"background":"url(/app/rewgt/shadow-slide/web/output/background.jpg) no-repeat center","backgroundSize":"100% 100%","borderColor":"#cccccc"}}' klass='round_mask-big default-round2-round0 solid-dotted-dashed no_shadow-lb-rb-rt-lt' border-width='{0}'>
+        <pre $=MarkedDiv style='{{"color":"rgb(0,0,255)"}}' width='{0.9999}' klass='S4 small-default-large align_center-right-default p1-p2-p3-p0 self_center-start-end-stretch-default'>Text</pre>
+      </div>
     </div>
-    <div :t=P top='{22}' left='{-29}' klass="default-large-small visible-auto-hidden default-align_center-right" width='{400}' data-prepost='0-3-7-3-1'>
-      <span :t=Span>Page 2</span>
+    <div $=Panel key='auto2' style='{{"bk1Color":"#33ccff","bk2Color":"#808080","bk3Color":"#9900ff","brdColor":"#cccccc","opacity":"0.9"}}' klass='visible-auto-hidden' height='{80}' width='{160}' top='{30}' left='{-180}' $for='' dual-angle='{-45}' data-group.optid='rewgt/shadow-slide/step1'>
+      <div $=Panel $style='{borderColor:duals.style.brdColor,background:ex.vendorId()+"linear-gradient("+duals.angle+"deg,"+duals.style.bk1Color+","+duals.style.bk2Color+","+duals.style.bk3Color+")"}' klass='round_mask-big default-round2-round0 solid-dotted-dashed no_shadow-lb-rb-rt-lt' border-width='{0}'>
+        <pre $=MarkedDiv style='{{"color":"rgb(255,255,255)"}}' width='{0.9999}' klass='S4 small-default-large align_center-right-default p1-p2-p3-p0 self_center-start-end-stretch-default'>Text</pre>
+      </div>
+    </div>
+    <div $=Panel key='auto3' style='{{"bk1Color":"#33ccff","bk2Color":"#808080","bk3Color":"#9900ff","brdColor":"#cccccc","opacity":"0.9"}}' klass='visible-auto-hidden' height='{80}' width='{160}' top='{30}' left='{40}' $for='' data-group.optid='rewgt/shadow-slide/step1'>
+      <div $=Panel $style='{borderColor:duals.style.brdColor,background:ex.vendorId()+"radial-gradient(center,ellipse cover,"+duals.style.bk1Color+","+duals.style.bk2Color+","+duals.style.bk3Color+")"}' klass='round_mask-big default-round2-round0 solid-dotted-dashed no_shadow-lb-rb-rt-lt' border-width='{0}'>
+        <pre $=MarkedDiv style='{{"color":"rgb(255,255,255)"}}' width='{0.9999}' klass='S4 small-default-large align_center-right-default p1-p2-p3-p0 self_center-start-end-stretch-default'>Text</pre>
+      </div>
     </div>
   </div>
-  <div :t=ScenePage>
-    <div :t=P width='{400}' klass="default-large-small visible-auto-hidden default-align_center-right" left='{-19}' top='{-19}'>
-      <span :t=Span>Page 3</span>
+  <div $=ScenePage key='auto3' klass='S4'>
+    <div $=P key='auto0' style='{{"zIndex":"-999"}}' margin='{0}' left='{-0.5}' top='{-0.5}' height='{0.9999}' width='{0.9999}'>
+      <span $=Canvas style='{{"background":"url(/app/rewgt/shadow-slide/web/output/background.jpg) no-repeat center","backgroundSize":"100% 100%","height":"100%","width":"100%"}}' data-is.ground='1'></span>
     </div>
-    <div :t=Div style='{{"zIndex":"-1"}}' data-prepost="2-3-0-3-1" top='{-15}' left='{24}' klass="default-large-small default-align_center-right" width='{175}'>
-      <div class='rewgt-static'><ul class="translucent-default build">
-        <li>item 1</li>
-        <li>item 2</li>
-        <li>item 3</li>
-      </ul></div>
+  </div>
+  <div $=ScenePage key='auto4' klass='S4'>
+    <div $=P key='auto0' style='{{"zIndex":"-999"}}' margin='{0}' left='{-0.5}' top='{-0.5}' height='{0.9999}' width='{0.9999}'>
+      <span $=Canvas style='{{"background":"url(/app/rewgt/shadow-slide/web/output/background2.jpg) no-repeat center","backgroundSize":"contain","height":"100%","width":"100%"}}' data-is.ground='1'></span>
     </div>
+  </div>
+  <div $=ScenePage key='auto5' klass='S4'>
+    <div $=P key='auto0' style='{{"zIndex":"-999"}}' margin='{0}' left='{-0.5}' top='{-0.5}' height='{0.9999}' width='{0.9999}'>
+      <span $=Canvas style='{{"background":"url(/app/rewgt/shadow-slide/web/output/background3.jpg) no-repeat center","backgroundSize":"contain","height":"100%","width":"100%"}}' data-is.ground='1'></span>
+    </div>
+  </div>
+  <div $=ScenePage key='auto6' klass='S4'>
+    <pre $=MarkedTable key='auto0' style='{{"borderColor":"#808080"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_01' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#808080"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_02' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_03' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_04' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto7' klass='S4'>
+    <pre $=MarkedTable key='auto0' style='{{"borderColor":"#ffa500"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_05' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#ffa500"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_06' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_07' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_08' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto8' klass='S4'>
+    <pre $=MarkedTable key='auto0' style='{{"borderColor":"#0000ff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_09' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#0000ff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_10' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_11' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_12' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto9' klass='S4'>
+    <pre $=MarkedTable style='{{"borderColor":"#000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_13' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#000000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_14' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_15' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_16' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto10' klass='S4'>
+    <pre $=MarkedTable key='auto0' style='{{"borderColor":"#800000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_17' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#800000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_18' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_19' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_20' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto11' klass='S4'>
+    <pre $=MarkedTable key='auto0' style='{{"borderColor":"#008000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_21' left='{-340}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' style='{{"borderColor":"#008000"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_22' left='{20}' top='{-160}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_23' left='{-340}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' style='{{"borderColor":"#ffffff"}}' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_24' left='{20}' width='{320}' border-width='{1}'>Title A
+
+Title B
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto12' klass='S4'>
+    <pre $=MarkedTable key='auto0' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_51' left='{-340}' top='{-160}' width='{320}'>Title A
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_52' left='{20}' top='{-160}' width='{320}'>Title A
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto2' klass='S5 default-large-small align_center-right-default p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_53' left='{-340}' width='{320}'>Title A
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto3' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_54' left='{20}' width='{320}'>#
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+  </div>
+  <div $=ScenePage key='auto13' klass='S4'>
+    <pre $=MarkedTable key='auto0' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_55' left='{-340}' top='{-160}' width='{320}'>&nbsp;
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
+    <pre $=MarkedTable key='auto1' klass='S5 default-large-small default-align_center-right p1-p2-p3-p0 no_shadow-lb-rb-rt-lt rewgt-tbl tbl_56' left='{20}' top='{-160}' width='{320}'>Title A
+
+Title B
+
+Title C
+
+---
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+<pre $="MarkedDiv">Row1
+</pre>
+
+---
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+
+<pre $="MarkedDiv">Row2
+</pre>
+</pre>
   </div>
 </div>
 </div>
 <!-- END OF CONTAINER, DO NOT CHANGE THIS LINE. -->
 
 <script>
-if (!window.W) { window.W = new Array(); W.$modules = [];}
-W.$modules.push( function(require,module,exports) {
+if (!window.W) { window.W = new Array(); W.$modules = [];} W.$modules.push( function(require,module,exports) {
 
 var React = require('react');
 var ReactDOM = require('react-dom');
 
 var W = require('shadow-widget');
-var main = W.$main, utils = W.$utils, ex = W.$ex;
+var main = W.$main, utils = W.$utils, ex = W.$ex, idSetter = W.$idSetter;
+
+idSetter['config'] = function(value,oldValue) {
+  if (value <= 2) {    // no need prepare render content
+    if (value == 1) {  // init process
+      if (W.__design__) {
+        this.canNavigateTo = function(sKey) {
+          if (this.state.checkedId) {
+            var preNode = this.componentOf('./pre');
+            if (preNode) setConfigText(preNode,sKey);
+          } // else, ignore first navigateTo
+          return true;
+        };
+      }
+    }
+    else if (value == 2) { // mount process
+      if (W.__design__) {
+        this.duals.style = {display:'block'};
+      }
+      else {
+        var bodyNode = this.componentOf('.body');
+        var pageNode = this.componentOf('//');
+        var markNode = this.componentOf('//mark');
+        if (bodyNode && pageNode && markNode) {
+          markNode.duals.left   = -0.5;
+          markNode.duals.top    = -0.5;
+          markNode.duals.width  = 0.9999;
+          markNode.duals.height = 0.9999;
+          
+          bodyNode.listen('innerSize', function(value,oldValue) {
+            if (!pageNode.isHooked) return;
+            if (!utils.pageCtrl.config.noFrame) return;
+            pageNode.duals.width  = value[0];
+            pageNode.duals.height = value[1];
+          });
+        }
+      }
+    }
+    return;
+  }
+  
+  function setConfigText(preNode,sType) {
+    var sHtml = '';
+    if (sType == 'slide')
+      sHtml = 'size=900x700\nautoplay=0\npage=0';
+    else if (sType == 'blog')
+      sHtml = 'size=0x0\nno-sidebar=1\nno-keypress=1\nno-frame=1';
+    else if (sType == 'slideshow')
+      sHtml = 'size=0x0\nno-keypress=1\nno-frame=1\nautoplay=5\nloopback=1';
+    else sHtml = 'size=900x700\npage=0\npage-gap=0\nbackground-color=rgb(216,216,216)\nno-sidebar=0\nno-keypress=0\nno-frame=0\nno-trans=0\nno-ground=0\nautoplay=0\nloopback=0';
+    preNode.duals['html.'] = sHtml;
+  }
+};
+
+if (!W.__design__) {
+
+main.$onReady.push( function() {
+  var pageCtrl = utils.pageCtrl, keys = pageCtrl && pageCtrl.keys;
+  if (Array.isArray(keys) && keys.length) {
+    var cfgPre = W.W('.body.' + keys[0] + '.config.pre'); // keys[0] is first page
+    cfgPre = cfgPre && cfgPre.component;
+    if (!cfgPre) return;
+    
+    var sCfg = cfgPre.props['html.'];
+    if (!sCfg) return;
+    
+    var dCfg = {}, hasSome = false;
+    var b = sCfg.split('\n'), hyphenPattern = /-(.)/g;
+    b.forEach( function(sLine) {
+      sLine = sLine.trim();
+      if (!sLine) return;
+      var b2 = sLine.split('='), sName = b2[0].trim(), value = (b2[1] || '').trim();
+      if (!sName) return;
+      
+      sName = sName.replace(hyphenPattern, function(_,chr) {
+        return chr.toUpperCase();
+      });
+      if (value.length <= 48) {  // try convert to number
+        var f = parseFloat(value);
+        if (typeof f == 'number' && (f+'') === value)
+          value = f;
+      }
+      
+      dCfg[sName] = value;
+      hasSome = true;
+    });
+    
+    if (hasSome) pageCtrl.config = dCfg;  // set slides config
+  }
+});
+
+}
 
 });
 </script>
 
-<link rel="stylesheet" shared="true" href="/app/rewgt/shadow-slide/web/output/base.css" />
-<link rel="stylesheet" shared="true" href="/app/rewgt/shadow-slide/web/output/slide_style.css" />
-<script src="bundle.js"></script>
+<link rel="stylesheet" shared="true" href="lib/base.css" />
+<link rel="stylesheet" shared="true" href="lib/slide_style.css" />
+<link rel="stylesheet" shared="true" href="lib/sample_style.css" />
+<script src="lib/react.min.js"></script>
+<script src="lib/react-dom.min.js"></script>
+<script src="lib/shadow-widget.min.js"></script>
+<script src="lib/shadow-slide.min.js"></script>
 
 </body>
 </html>

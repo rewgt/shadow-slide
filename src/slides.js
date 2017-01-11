@@ -1,17 +1,196 @@
 // slides.js
 
-var React = require('react');
-var ReactDOM = require('react-dom');
-var W = require('shadow-widget');
-
+var React = require('react');        // var React = window.React;
+var ReactDOM = require('react-dom'); // var ReactDOM = window.ReactDOM;
+var W = require('shadow-widget');    // var W = window.W;
+                                     // if (!React || !ReactDOM || !W) console.log('fatal error: invalid cdn version of react or shadow-widget.');
 var T = W.$templates, creator = W.$creator;
 var utils = W.$utils, ex = W.$ex, main = W.$main;
 
 var containNode_   = null;
 var topmostWidget_ = null;
 
-var WEB_BROWSER_TYPE = '';
-var WEB_BROWSER_VER  = '';
+var widgetBaseUrl_ = '/app/rewgt/shadow-slide/web/output';
+
+class TGotoPage_ extends T.Div_ {
+  constructor(name,desc) {
+    super(name || 'rewgt.GotoPage',desc);
+    this._defaultProp['step.play'] = true;
+    // this._docUrl = 'doc';  // default is 'doc'
+  }
+  
+  _getGroupOpt(self) {
+    return { type: 'mono', // mono, extend
+      editable: 'all',     // all, some, none
+      baseUrl: widgetBaseUrl_,
+      tools: [],
+    };
+  }
+  
+  _getSchema(self,iLevel) {
+    iLevel = iLevel || 1200;
+    var schema = super._getSchema(self,iLevel+200);
+    schema['data-goto'] = [iLevel+1,'string',null,'[string]: +N, -N, N, or named_page'];
+    return schema;
+  }
+  
+  getDefaultProps() {
+    var props = super.getDefaultProps();
+    props['step.play'] = true;
+    props['data-goto'] = '+1';   // data-* auto used as _statedProp
+    props['html.'] = 'GotoPage';
+    return props;
+  }
+  
+  stepPlay(iSpeed) {  // ignore iSpeed
+    if (W.__design__) return;
+    
+    var self = this;
+    setTimeout( function() {
+      var goNext = false, goPrev = false;
+      var sPage = self.state['data-goto'] || '';
+      if (sPage[0] == '+') {
+        goNext = true;
+        sPage = sPage.slice(1);
+      }
+      else if (sPage[0] == '-') {
+        goPrev = true;
+        sPage = sPage.slice(1);
+      }
+      var iPage = parseInt(sPage);
+      if (isNaN(iPage) && !goNext && !goPrev)
+        iPage = utils.pageCtrl.namedPage[sPage];
+      if (isNaN(iPage)) return;  // goto unknown place
+      
+      var iNewPage = utils.pageCtrl.pageIndex;
+      iNewPage = goNext? iNewPage + iPage: (goPrev? iNewPage - iPage: iPage);
+      utils.pageCtrl.gotoPage(iNewPage);
+    },300);
+  }
+  
+  stepPause(sReason) {
+    // do nothing
+  }
+  
+  stepIsDone() {
+    return true;
+  }
+  
+  playOnEnter() {
+    return false;
+  }
+  
+  $onClick(event) {
+    if (W.__design__) return;
+    if (utils.hasClass(this,'hidden-default')) return;
+    
+    var node = this.getHtmlNode(), targ = event.target, sGoto = '';
+    while (targ) {
+      sGoto = targ.getAttribute('data-goto') || '';
+      if (sGoto) break;
+      if (targ === node || targ === document)
+        break;
+      else targ = targ.parentNode;
+    }
+    if (!sGoto) return;
+    
+    if (node !== targ)
+      this.duals['data-goto'] = sGoto;
+    // else, read 'data-goto' from self node
+    this.stepPlay(0); // will delay 300 ms
+  }
+}
+
+if (!T.rewgt) T.rewgt = {};
+T.rewgt.GotoPage_ = TGotoPage_;
+T.rewgt.GotoPage  = new TGotoPage_();
+
+class TDelayTimer_ extends T.P_ {
+  constructor(name,desc) {
+    super(name || 'rewgt.DelayTimer',desc);
+    this._defaultProp['step.play'] = true;
+    // this._docUrl = 'doc';  // default is 'doc'
+  }
+  
+  _getGroupOpt(self) {
+    return { type: 'mono',
+      editable: 'all',
+      baseUrl: widgetBaseUrl_,
+      tools: [],
+    };
+  }
+  
+  _getSchema(self,iLevel) {
+    iLevel = iLevel || 1200;
+    var schema = super._getSchema(self,iLevel+200);
+    schema['data-delay'] = [iLevel+1,'string',null,'[string]: 0 or N seconds'];
+    schema['data-auto'] = [iLevel+2,'string',null,'[string]: auto delay when page enter, "" or "1"'];
+    return schema;
+  }
+  
+  getDefaultProps() {
+    var props = super.getDefaultProps();
+    props['step.play']  = true;
+    props['data-delay'] = '0';
+    props['data-auto']  = '';
+    return props;
+  }
+  
+  getInitialState() {
+    var state = super.getInitialState();
+    this.canAct = true;
+    this.isDone = false;
+    return state;
+  }
+  
+  stepPlay(iSpeed) {
+    if (W.__design__) return;
+    
+    var iSecond = parseInt(this.state['data-delay']) || 0;
+    if (iSecond === 0)
+      iSecond = iSpeed || 0;
+    if (isNaN(iSecond)) return;  // ignore
+    
+    this.canAct = true;
+    this.isDone = false;
+    var self = this;
+    
+    setTimeout( function() {
+      self.isDone = true;
+      
+      var node, evt, canAct = self.canAct;
+      if (canAct && self.$onClick && (node=self.getHtmlNode())) {
+        if (window.getComputedStyle(node).visibility != 'hidden') {
+          evt = document.createEvent('Event');
+          evt.target = node;
+          self.$onClick(evt);
+        }
+      }
+      
+      if (canAct && Array.isArray(self.state.trigger))
+        utils.fireTrigger(self);
+    },iSecond * 1000);
+  }
+  
+  stepPause(sReason) {
+    this.canAct = false;
+  }
+  
+  stepIsDone() {
+    return this.isDone;
+  }
+  
+  playOnEnter() {
+    var s = this.state['data-auto'];
+    if (s == 'true') return true;
+    return !!parseInt(s);
+  }
+}
+
+T.rewgt.DelayTimer_ = TDelayTimer_;
+T.rewgt.DelayTimer  = new TDelayTimer_();
+
+//---------------------------
 var TRANS_END_FUNC   = '';
 var TRANS_CSS_NAME   = '';
 
@@ -30,6 +209,7 @@ var last_step_player_ = null;  // component
 
 var array_push_ = Array.prototype.push;
 var default_margin_ = [0,0,0,0];
+var remove_pre_cls_ = ['-prebuild-1','-prebuild-2','-prebuild-3','-prebuild-4','-prebuild-5'];
 
 var waitResetComps_   = [];
 var prepare_loopback_ = true;
@@ -91,6 +271,8 @@ function checkJoinedStep(slideNode) {
 }
 
 function setupFrames_(pageCtrl,iCurr,withStepNext) {
+  if (!pageCtrl.keys.length) return; // not ready yet
+  
   if (last_step_player_) {
     var slideWdgt, wdgt = last_step_player_.widget, stepDone = false;
     if (wdgt && (slideWdgt=wdgt.parent)) {  // still avaliable
@@ -280,62 +462,43 @@ function setupFrames_(pageCtrl,iCurr,withStepNext) {
   }
 }
 
-(function() {
-  var sUA = navigator.userAgent.toLowerCase();
-  var m = sUA.match(/trident.*rv[ :]*([\d.]+)/); // >= IE11, can not use sUA.match(/msie ([\d.]+)/)
-  if (m) {
-    if (parseFloat(m[1]) >= 11.0) {
-      WEB_BROWSER_TYPE = 'ie'; WEB_BROWSER_VER = m[1];
-      TRANS_END_FUNC = 'MSTransitionEnd'; TRANS_CSS_NAME = 'msTransform'; // 'transform' or 'msTransform' can work also
-    }
-  } else {
-    m = sUA.match(/firefox\/([\d.]+)/);
-    if (m) {
-      WEB_BROWSER_TYPE = 'firefox'; WEB_BROWSER_VER = m[1];
-      TRANS_END_FUNC = 'transitionend'; TRANS_CSS_NAME = 'transform';
-    } else {
-      m = sUA.match(/chrome\/([\d.]+)/);
-      if (m) {
-        WEB_BROWSER_TYPE = 'chrome'; WEB_BROWSER_VER = m[1];
-        TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = 'WebkitTransform';
-      }
-      else {
-        m = sUA.match(/opera.([\d.]+)/);
-        if (m) {
-          WEB_BROWSER_TYPE = 'opera'; WEB_BROWSER_VER = m[1];
-          TRANS_END_FUNC = 'oTransitionEnd'; TRANS_CSS_NAME = 'transform';
-        }
-        else {
-          m = sUA.match(/safari\/([\d.]+)/);
-          if (m) {
-            WEB_BROWSER_TYPE = 'safari'; WEB_BROWSER_VER = m[1];
-            TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = 'WebkitTransform';
-          }
-          else {
-            m = sUA.match(/webkit\/([\d.]+)/);
-            if (m) {  // webkit kernel, iPad ...
-              WEB_BROWSER_TYPE = 'webkit'; WEB_BROWSER_VER = m[1];
-              TRANS_END_FUNC = 'webkitTransitionEnd'; TRANS_CSS_NAME = 'WebkitTransform';
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  if (WEB_BROWSER_TYPE == '' || WEB_BROWSER_VER == '') {
-    if (sUA.match(/msie ([\d.]+)/))
-      console.log('!fatal error: IE version too low, please use IE11 or higher');
-    else console.log('!fatal error: unknown web browser type'); // only support firefox/chrome/safari/opera/IE
-  }
-})();
-
-main.$onLoad.push( function() {
+main.$onLoad.push( function() { // all functions in $onLoad not run when W.__design__
   containNode_ = creator.containNode_;      // must be exists
   topmostWidget_ = creator.topmostWidget_;  // must be exists
   if (!containNode_ || !topmostWidget_) return;
   
-  var config, withStepNext = false, pageCtrl = utils.pageCtrl;
+  var pageCtrl = utils.pageCtrl;
+  if (!pageCtrl) { // no ScenePage defined, create empty one
+    if (W.__design__) return;   // double check for safty
+    pageCtrl = utils.pageCtrl = new creator.pageCtrl_([]);
+  }
+  
+  var vendor = utils.vendorId || [], sVendor = vendor[0] || '';
+  if (sVendor == 'ie') {
+    TRANS_END_FUNC = 'MSTransitionEnd';
+    if (vendor[1])
+      TRANS_CSS_NAME = 'transform'; // 'transform' and 'msTransform' both can work
+    else {
+      TRANS_CSS_NAME = 'msTransform';
+      console.log('!warning: IE version too low, please use IE11 or higher');
+    }
+  }
+  else if (sVendor == 'firefox') {
+    TRANS_END_FUNC = 'transitionend';
+    TRANS_CSS_NAME = 'transform';
+  }
+  else if (sVendor == 'opera') {
+    TRANS_END_FUNC = 'oTransitionEnd';
+    TRANS_CSS_NAME = 'transform';
+  }
+  else if (sVendor == 'chrome' || sVendor == 'safari' || sVendor == 'webkit') {
+    TRANS_END_FUNC = 'webkitTransitionEnd';
+    TRANS_CSS_NAME = 'WebkitTransform';
+  }
+  else  // only support firefox/chrome/safari/opera/IE
+    console.log('!fatal error: unknown web browser type');
+  
+  var config, withStepNext = false;
   var leftCtrl = pageCtrl.leftPanel, rightCtrl = pageCtrl.rightPanel;
   
   if (leftCtrl && rightCtrl && pageCtrl.gotoPage_) {  // can replace
@@ -343,6 +506,12 @@ main.$onLoad.push( function() {
     if (pageCtrl.config)
       config = Object.assign({},pageCtrl.config,config);
     pageCtrl.config = config;
+    
+    if (!pageCtrl.keys.length) {
+      // config.noSidebar = true;
+      // config.noKeypress = true;
+      config.autoplay = false; // slide page maybe defined later, cancel autoplay when current is empty
+    }
     
     leftCtrl.onclick = function(event) {
       withStepNext = false;
@@ -407,6 +576,11 @@ main.$onLoad.push( function() {
       if (hi_ == 0) hi_ = innerHi - 16;
       SLIDE_HALF_HEIGHT = Math.floor(hi_ / 2);
       SLIDE_GAP_WIDTH = Math.min(100,(innerWd - SLIDE_HALF_WIDTH - SLIDE_HALF_WIDTH) & 0xFFFFFFFE);
+    }
+    
+    var iTmp;
+    if (config.pageGap && !isNaN(iTmp=parseInt(config.pageGap))) {
+      if (iTmp > 0) SLIDE_GAP_WIDTH = iTmp;
     }
     
     if (config.backgroundColor) {
@@ -481,6 +655,76 @@ main.$onLoad.push( function() {
     if (!config.autoplay || !config.loopback)
       prepare_loopback_ = false;
     
+    pageCtrl.renewPages = function(bNew) {
+      var newKeys = [], newNamed = {}, newSlides = [], bAdd = [];
+      var oldKey = pageCtrl.keys, oldIdx = pageCtrl.pageIndex;
+      bNew.forEach( function(item) {
+        var sKey = item[0], comp = item[1];
+        if ((parseInt(sKey)+'') !== sKey)
+          newNamed[sKey] = newKeys.length;
+        if (!comp.whenSlideLeave) // means not call pageCtrl.initPage() yet
+          bAdd.push([sKey,comp,newKeys.length]);
+        newKeys.push(sKey);
+        newSlides.push(comp);
+      });
+      
+      // step 1: update slideHiter
+      oldKey.forEach( function(sKey) {
+        if (newKeys.indexOf(sKey) < 0)
+          delete slideHiter[sKey];
+      });
+      
+      // step 2: prepare new created pages
+      if (bAdd.length && slideState > 0) {  // slideState > 0 means already in running
+        containNode_.classList.add('no-trans');  // ignore transition
+        setTimeout( function() {
+          containNode_.classList.remove('no-trans');
+        },100);
+        
+        SCREEN_CENTER_Y = Math.floor(window.innerHeight / 2);
+        var topY = SCREEN_CENTER_Y - SLIDE_HALF_HEIGHT;
+        var wd = SLIDE_HALF_WIDTH + SLIDE_HALF_WIDTH;
+        var hi = SLIDE_HALF_HEIGHT + SLIDE_HALF_HEIGHT;
+        
+        var bChild = [];
+        bAdd.forEach( function(item) {
+          var sKey = item[0], comp = item[1], idx = item[2];
+          var b = pageCtrl.initPage(comp,sKey,idx,wd,hi,topY);
+          array_push_.apply(bChild,b);
+        });
+        bChild.forEach( function(item) {
+          utils.addClass(item[0],item[1]); // delay add prebuild-N
+        });
+      }
+      
+      // step 3: auto goto page
+      var iPos, sCurr = oldKey[oldIdx], hasOldPg = (typeof sCurr == 'string');
+      pageCtrl.keys = newKeys;
+      pageCtrl.namedPage = newNamed;
+      slideEls = newSlides;
+      if (hasOldPg && (iPos=newKeys.indexOf(sCurr)) >= 0)
+        pageCtrl.pageIndex = iPos;  // not shift page
+      else {
+        var iJump = 0;
+        if (hasOldPg) {
+          for (var i=oldIdx-1; i >= 0; i--) {
+            var sKey = oldKey[i];
+            if (sKey && (iPos=newKeys.indexOf(sKey)) >= 0) {
+              iJump = i;
+              break;
+            }
+          }
+        }
+        
+        if (newKeys.length) {
+          setTimeout( function() {
+            pageCtrl.gotoPage(iJump);
+          },300);
+        }
+        else pageCtrl.pageIndex = 0;
+      }
+    };
+    
     pageCtrl.gotoPage_ = function(keys,pgIndex) {
       var sKey = keys[pgIndex];
       var comp = slideEls[pgIndex];
@@ -517,14 +761,14 @@ main.$onLoad.push( function() {
               var sCss = trySetPreBuild(childComp);
               if (sCss) {
                 if (prepare_loopback_)
-                  waitResetComps_.push(childComp);
+                  waitResetComps_.push(childComp); // record for restoring when auto-play loopback
                 bRet.push([childComp,sCss]);
               }
             }
           }
         }
         
-        blocks = node.querySelectorAll('.rewgt-static > .build, .rewgt-scene > .build');
+        blocks = node.querySelectorAll('.rewgt-static > .build, .rewgt-center > .build');
         for (var i=0,item; item = blocks[i]; i++) {
           var inStatic = item.parentNode.classList.contains('rewgt-static');
           var sKey, bltWdgt = null;
@@ -554,17 +798,47 @@ main.$onLoad.push( function() {
     };
     
     pageCtrl.enterPage = function(event,comp,isFirstEnter) {
+      if (W.__design__) return;
+      
       if (last_step_player_) {
         tryPausePlayer(last_step_player_,true);
         last_step_player_ = null;
       }
       last_prepost_ = null;
       
-      if (isFirstEnter) {
-        var targ = event.target;
-        setTimeout( function() {
-          checkJoinedStep(targ);
-        },300);
+      var node;
+      if (isFirstEnter && (node=comp.getHtmlNode())) {
+        var bList = [], hasJoin = false;
+        var blocks = node.querySelectorAll('div.rewgt-center > [class*="prebuild-"]');
+        for (var i=0,block; block=blocks[i]; i++) {
+          var s = block.getAttribute('data-prepost') || '', b = s.split('-');
+          if (i == 0 && parseInt(b[4]))
+            hasJoin = true;
+          if (b[0] === '18' || b[0] === '19' || b[2] === '18' || b[2] === '19') {
+            var sKey = utils.keyOfNode(block);
+            if (sKey) bList.push(sKey);
+          }
+        }
+        
+        var wdgt;
+        if (bList.length && (wdgt=comp.widget)) {
+          setTimeout( function() {
+            bList.forEach( function(sKey) {
+              var child = wdgt[sKey], childComp = child && child.component;
+              if (childComp && typeof childComp.playOnEnter == 'function') {
+                if (childComp.playOnEnter() && typeof childComp.stepPlay == 'function')
+                  childComp.stepPlay(0); // 0 means not specify speed
+              }
+            });
+          },300);
+        }
+        
+        if (hasJoin) {
+          var targ = event.target;
+          setTimeout( function() {
+            checkJoinedStep(targ);
+          },300);
+        }
       }
     };
     
@@ -592,8 +866,17 @@ main.$onLoad.push( function() {
       
       prepare_loopback_ = false;
       containNode_.classList.add('no-trans');
-      waitResetComps_.forEach( function(comp) {
-        if (!comp.widget || !comp.isHooked) return;
+      for (var i=waitResetComps_.length-1; i >= 0; i--) {
+        var comp = waitResetComps_[i];
+        if (!comp.widget || !comp.isHooked || !comp.widget.parent) {
+          waitResetComps_.splice(i,1);  // not available, just delete it
+          continue;
+        }
+        
+        if (last_step_player_) {
+          tryPausePlayer(last_step_player_,true);
+          last_step_player_ = null;
+        }
         
         var mrg = (comp.state.margin || default_margin_).slice(0);
         mrg[0] = comp.oldMarginT || 0; mrg[3] = comp.oldMarginL || 0;
@@ -602,7 +885,7 @@ main.$onLoad.push( function() {
         
         comp.duals.margin = mrg;
         comp.duals.style = sty;
-      });
+      }
       
       setTimeout( function() {
         containNode_.classList.remove('no-trans');
@@ -621,7 +904,7 @@ main.$onLoad.push( function() {
     var wdgt = player.widget;
     if (wdgt && wdgt.parent) {  // still avaliable
       if (typeof player.stepPause == 'function')
-        player.stepPause(isJmpPg);
+        player.stepPause(isJmpPg?'JUMP_PAGE':'NEXT_PAGE');
     }
   }
   
@@ -635,7 +918,7 @@ main.$onLoad.push( function() {
       if (isNaN(index) || !(iSpeed >= 1 && iSpeed <= 5)) return ret;
       
       comp.oldZindex = parseInt((comp.state.style || {}).zIndex) || 0;
-      if (index == 0 || index == 18) {
+      if (index == 0 || index == 18 || index == 19) {  // index==18 play, index==19 pause
         if (index == 0 && b.length >= 4) {
           var postIndex = parseInt(b[2]);
           if (postIndex == 13)  // restore
@@ -732,7 +1015,7 @@ main.$onLoad.push( function() {
           var sty = {};
           sty[TRANS_CSS_NAME] = 'scale(1.4,1.4)';
           comp.duals.style = sty;
-        }      // index==18, play
+        }
         
         ret = 'prebuild-' + iSpeed;
         comp.oldMarginL = oldLeft;
@@ -759,21 +1042,22 @@ main.$onLoad.push( function() {
         last_prepost_ = null;
       }
       
-      block = node.querySelector('div.rewgt-center > [class*="prebuild-"]');
+      var blocks = node.querySelectorAll('div.rewgt-center > [class*="prebuild-"]');
+      var block = blocks[0];
       if (block) {
-        var sPrepost = block.getAttribute('data-prepost') || '';
+        var nextBlock = null, sPrepost = block.getAttribute('data-prepost') || '';
         if (sPrepost.startsWith('0-')) { // only post-step
+          var bList = [block];
           block = null;
           
-          var bList = [];
-          var blocks = node.querySelectorAll('div.rewgt-center > [class*="prebuild-"]');
-          for (var i2=0,block2; block2 = blocks[i2]; i2++) {
+          for (var i2=1,block2; block2 = blocks[i2]; i2++) {
             var sPrepost2 = block2.getAttribute('data-prepost') || '';
             if (sPrepost2.startsWith('0-'))
               bList.push(block2);
             else {
               block = block2;
               sPrepost = sPrepost2;
+              nextBlock = blocks[i2+1];
               break;
             }
           }
@@ -783,6 +1067,7 @@ main.$onLoad.push( function() {
               doAnyBuild = true;
           });
         }
+        else nextBlock = blocks[1];
         
         var sKey = block && utils.keyOfNode(block);
         if (sKey) {
@@ -806,8 +1091,16 @@ main.$onLoad.push( function() {
               if (typeof childComp.stepPlay == 'function') {
                 var iSpeed = parseInt(bSeg[1] || '3');
                 childComp.stepPlay(iSpeed); // 3 is normal, 1 is fastest:  1,2,3,4,5
-                last_step_player_ = childComp;
+                
+                var sPrepost2 = nextBlock && nextBlock.getAttribute('data-prepost');
+                if (sPrepost2 && parseInt(sPrepost2.split('-')[4]))  // joined
+                  last_step_player_ = childComp;
               }
+            }
+            else if (sIndex == '19') {
+              isPlayer = true;
+              if (typeof childComp.stepPause == 'function')
+                childComp.stepPause('PRE_STEP');
             }
             
             if (isPlayer)
@@ -927,13 +1220,12 @@ main.$onLoad.push( function() {
     comp = comp && comp.component;
     if (!comp) return false;
     
-    var sKlass = (' ' + (comp.state.klass || '')).replace(/\u0020prebuild-[1-5]/g,'');
     var s = comp.state['data-prepost'] || '', b = s.split('-');
     if (b.length >= 4) {
       var index = parseInt(b[2]), iSpeed = parseInt(b[3]);
       if (index >= 1 && index <= 17) {
         if (iSpeed >= 1 && iSpeed <= 5) {
-          comp.duals.klass = (sKlass + ' postbuild-' + iSpeed).trim();
+          utils.setClass(comp,remove_pre_cls_.concat(['postbuild-' + iSpeed]));
           setTimeout( function() { // postbuild-N is added
             node.addEventListener(TRANS_END_FUNC,getStepEndFunc(false,wdgt),false);
             animatePost();
@@ -941,15 +1233,21 @@ main.$onLoad.push( function() {
           return true;
         }
       }
-      else if (index == 18) {    // play, only start, no need join next step
-        comp.duals.klass = sKlass.trim();
+      else if (index == 18) {    // play, post-step no need check next joined
+        utils.setClass(comp,remove_pre_cls_);
         if (typeof comp.stepPlay == 'function')
           comp.stepPlay(iSpeed); // 3 is normal, 1 is fastest:  1,2,3,4,5
         return true;
       }
+      else if (index == 19) {    // pause
+        utils.setClass(comp,remove_pre_cls_);
+        if (typeof comp.stepPause == 'function')
+          comp.stepPause('POST_STEP');
+        return true;
+      }
     }
     
-    comp.duals.klass = sKlass.trim();  // remove prebuild-N
+    utils.setClass(comp,remove_pre_cls_);
     return false;
     
     function animatePost() {

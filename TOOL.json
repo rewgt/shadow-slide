@@ -1,0 +1,32 @@
+{
+  "lib": {
+    "baseUrl": "/app/rewgt/shadow-slide/web/output",
+    "tools": [ {
+      "name": "step",
+      "icon": "step.png",
+      "title": "config pre-post step",
+      "url": "edit_prepost.html",
+      "halfScreen": true,
+      "noMove": false,
+      "clickable": true,
+      "onlyScene": true,
+      "left": 0.05,
+      "top": 0.05,
+      "width": 0.9,
+      "height": 0.9 }
+    ]
+  },
+  
+  "rewgt/shadow-slide/steps": {
+    "opt": "mono/all",
+    "tools": [ "lib/step", "*" ]
+  },
+  "rewgt/shadow-slide/step0": {
+    "opt": "mono/none",
+    "tools": [ "lib/step", "*" ]
+  },
+  "rewgt/shadow-slide/step1": {
+    "opt": "mono/some",
+    "tools": [ "lib/step", "*" ]
+  }
+}

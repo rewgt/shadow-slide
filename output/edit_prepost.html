@@ -1,31 +1,11 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<title>Config pre-post step for widget</title>
+<title>Config pre-post step</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-<script type='text/cse' line='7'>
-#include "h5lib.h";
-
-namespace H5:
-
-return super(window as H5Window):
-  document as window->document;
-  apiNode as document.getElementById("api-node");
-
-  apiNode.setHook("setCloseState", super(isOk):
-    hostWin as window.hostWin();
-    hostWin->closeState = isOk? 1: 2;
-    if isOk:
-      hostWin->sPrePost = JSB(document)..getPrePostData();
-    end;
-  end);
-end;
-
-end;
-</script>
-
 <script type="text/javascript">
+window.addEventListener('load', function(event) {
 
 var currPreIndex  = 0;
 var currPostIndex = 0;
@@ -189,39 +169,6 @@ function refreshPreStyle() {
   }
 }
 
-function setPreTagValue(event) {
-  var node = event.target;
-  if (node.nodeName != 'INPUT') return;
-  
-  var sId = node.id, b=sId.split('-');
-  currPreIndex = parseInt(b[1]);
-  
-  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
-  for (var i=0,item; item = nodes[i]; i++) {
-    if (item === node)
-      item.checked = true;
-    else item.checked = false;
-  }
-  refreshPreStyle();
-}
-
-function setPreSpeed(event) {
-  var node = event.target;
-  if (node.nodeName != 'INPUT') return;
-  
-  var sId=node.id, b=sId.split('-');
-  currPreSpeed = parseInt(b[1]);
-
-  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
-  for (var i=0,item; item = nodes[i]; i++) {
-    if (item === node)
-      item.checked = true;
-    else item.checked = false;
-  }
-  
-  refreshPreStyle();
-}
-
 function onPrePostFinish(event) {
   var divNode = event.target;
   divNode.removeEventListener(TRANS_END_FUNC,onPrePostFinish);
@@ -329,45 +276,66 @@ function refreshPostStyle() {
   }
 }
 
-function setPostTagValue(event) {
-  var node = event.target;
-  if (node.nodeName != 'INPUT') return;
+document.querySelector('table.prepost').onclick = function(event) {
+  var node = event.target, sId = node.id;
+  if (node.nodeName != 'INPUT' || !sId) return;
   
-  var sId=node.id, b=sId.split('-');
-  currPostIndex = parseInt(b[1]);
+  var b = sId.split('-');
+  if (b.length != 2) return;
+  var sType = b[0], sIndex = b[1];
   
-  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
-  for (var i=0,item; item = nodes[i]; i++) {
-    if (item === node)
-      item.checked = true;
-    else item.checked = false;
+  if (sType == 'pre') {
+    currPreIndex = parseInt(sIndex);
+    var nodes = document.querySelectorAll('input[id^="pre-"]');
+    for (var i=0,item; item = nodes[i]; i++) {
+      if (item === node)
+        item.checked = true;
+      else item.checked = false;
+    }
+    refreshPreStyle();
   }
-  
-  refreshPostStyle();
-}
+  else if (sType == 'post') {
+    currPostIndex = parseInt(sIndex);
+    var nodes = document.querySelectorAll('input[id^="post-"]');
+    for (var i=0,item; item = nodes[i]; i++) {
+      if (item === node)
+        item.checked = true;
+      else item.checked = false;
+    }
+    refreshPostStyle();
+  }
+  else if (sType == 'prespeed') {
+    currPreSpeed = parseInt(sIndex);
+    var nodes = document.querySelectorAll('input[id^="prespeed-"]');
+    for (var i=0,item; item = nodes[i]; i++) {
+      if (item === node)
+        item.checked = true;
+      else item.checked = false;
+    }
+    refreshPreStyle();
+  }
+  else if (sType == 'postspeed') {
+    currPostSpeed = parseInt(sIndex);
+    var nodes = document.querySelectorAll('input[id^="postspeed-"]');
+    for (var i=0,item; item = nodes[i]; i++) {
+      if (item === node)
+        item.checked = true;
+      else item.checked = false;
+    }
+    refreshPostStyle();
+  }
+};
 
-function setPostSpeed(event) {
-  var node = event.target;
-  if (node.nodeName != 'INPUT') return;
-  
-  var sId=node.id, b=sId.split('-');
-  currPostSpeed = parseInt(b[1]);
-  
-  var nodes = document.querySelectorAll('input[id^="' + b[0] + '-"]');
-  for (var i=0,item; item = nodes[i]; i++) {
-    if (item === node)
-      item.checked = true;
-    else item.checked = false;
-  }
-  
-  refreshPostStyle();
-}
+//------------------------
+var taskId = 0;
+var inValue = null;
+var inStepFlag = '';
 
 function getPrePostData() {
   var sJoin = document.getElementById('joinPrev').checked? '1': '0';
   if (currPreIndex == 0) {
     if (currPostIndex == 0)
-      return '';
+      return '';  // not use pre-step and post-step
     else return '0-' + currPreSpeed + '-' + currPostIndex + '-' + currPostSpeed + '-' + sJoin;
   }
   else {
@@ -377,20 +345,42 @@ function getPrePostData() {
   }
 }
 
-function finishEditing(isOk) {
-  var apiNode = document.getElementById('api-node');
-  apiNode.setCloseState(isOk);
-  window.close();
-}
-
-function initPrePost(sFlag,canPlay) {
-  if (canPlay) {
-    document.getElementById('pre-play').style.display = 'block';
-    document.getElementById('post-play').style.display = 'block';
+function closeDialog(isClose,isCancel,byParent) {
+  var changed = false, bRmv = [], dProp = Object.assign({},inValue[0]);
+  
+  if (!isCancel) {
+    var outStepFlag = getPrePostData();
+    
+    if (inStepFlag !== outStepFlag) {
+      changed = true;
+      if (!outStepFlag)
+        bRmv.push('data-prepost');
+      else dProp['data-prepost'] = outStepFlag;
+    }
   }
   
-  if (sFlag) {
-    var b = sFlag.split('-');
+  var outValue = [changed,dProp,bRmv];
+  var s = '[PROJECT_NAME]' + JSON.stringify({method:'onDialogExit',param:[isClose,changed,taskId,outValue]});
+  window.parent.window.postMessage(s,'*');
+}
+
+document.getElementById('cancel-btn').onclick = function(event) {
+  closeDialog(true,true,false);
+};
+
+function initGui() {
+  inStepFlag = inValue[0]['data-prepost'] || '';
+  var dOption = inValue[2];   // inValue: [dProp,sPath,dWidgetOption]
+  
+  if (dOption.propsEx && dOption.propsEx['step.play']) { // can play
+    document.getElementById('preplay-18').style.display = 'block';
+    document.getElementById('preplay-19').style.display = 'block';
+    document.getElementById('postplay-18').style.display = 'block';
+    document.getElementById('postplay-19').style.display = 'block';
+  }
+  
+  if (inStepFlag) {
+    var b = inStepFlag.split('-');
     if (b.length >= 2) {
       var i1 = parseInt(b[0]);
       var node1 = document.getElementById('pre-' + i1);
@@ -423,7 +413,7 @@ function initPrePost(sFlag,canPlay) {
       }
     }
     
-    if (b.length >= 5 && b[4] == '1') {  // join previous
+    if (b.length >= 5 && parseInt(b[4])) {  // join previous
       document.getElementById('joinPrev').checked = true;
     }
     
@@ -433,15 +423,46 @@ function initPrePost(sFlag,canPlay) {
       document.getElementById('post-0').checked = false;
   }
 }
+
+if (window.parent && window.parent.window !== window) {
+  window.addEventListener('message', function(msg) {
+    try {
+      if (typeof msg == 'object' && msg.data) {
+        msg = msg.data;
+        msg = JSON.parse(msg.slice(14)); // remove prefix '[PROJECT_NAME]'
+      }
+      else msg = null;
+    }
+    catch(e) {
+      msg = null;
+      console.log(e);
+    }
+    
+    if (typeof msg == 'object') {
+      if (msg.method == 'init') {
+        taskId = msg.param[0];
+        inValue = msg.param[1];  // cssList = msg.param[2] || [];
+        initGui();
+      }
+      else if (msg.method == 'close') {
+        var isClose = msg.param[0];
+        closeDialog(isClose,false,true); // isCancel=false, byParent=true
+      }
+    }
+  }, false);
+  
+  var sCmd = '[PROJECT_NAME]' + JSON.stringify({method:'onDialogLoad',param:[]});
+  window.parent.window.postMessage(sCmd,'*');
+}
+
+},false);
 </script>
 
 <style>
 body {
-  margin: 0px;
-  padding: 0px;
-  overflow: auto;
   font-size: 15px;
   line-height: 1.5;
+  background-color: white;
 }
 .noselect-txt {
   -moz-user-select: none;
@@ -552,8 +573,7 @@ div.postbuild-5 {
 <tr><td><p id='hint-text'></p></td>
   <td style='min-width:150px'>
     <p style='text-align:right'>
-    <input type='button' style='width:60px' value='OK' onclick='finishEditing(true)' />
-    <input type='button' style='width:70px' value='Cancel' onclick='finishEditing(false)' />
+     <input id='cancel-btn' type='button' style='width:70px' value='Cancel'> &nbsp;
     </p>
   </td></tr>
 </table>
@@ -566,7 +586,7 @@ div.postbuild-5 {
       <div style='background:rgba(255,0,0,0.3); z-index:99; position:relative; width:300px; height:300px'></div>
       <div style='background:rgba(0,255,0,0.3); border:0px solid gray; border-top-width:1px; z-index:101; position:relative; top:-150px; width:300px; height:150px'></div>
       <div id='demo-img' style='z-index:100; position:relative; left:110px; top:-340px; width:80px; height:80px'>
-        <img style='width:100%; height:100%' src='smile.ico' />
+        <img style='width:100%; height:100%' src='/app/rewgt/shadow-slide/web/output/cse_logo.jpg' />
       </div>
     </div>
   </td>
@@ -574,22 +594,22 @@ div.postbuild-5 {
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-0' checked='checked'><label for='pre-0'>disable</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-0' checked='checked'><label for='post-0'>disable</label>
   </td>
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-1'><label for='pre-1'>from top</label><br>
     <input type='checkbox' id='pre-2'><label for='pre-2'>from right</label><br>
     <input type='checkbox' id='pre-3'><label for='pre-3'>from bottom</label><br>
     <input type='checkbox' id='pre-4'><label for='pre-4'>from left</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-1'><label for='post-1'>to top</label><br>
     <input type='checkbox' id='post-2'><label for='post-2'>to right</label><br>
     <input type='checkbox' id='post-3'><label for='post-3'>to bottom</label><br>
@@ -598,13 +618,13 @@ div.postbuild-5 {
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-5'><label for='pre-5'>top-right</label><br>
     <input type='checkbox' id='pre-6'><label for='pre-6'>bottom-right</label><br>
     <input type='checkbox' id='pre-7'><label for='pre-7'>bottom-left</label><br>
     <input type='checkbox' id='pre-8'><label for='pre-8'>top-left</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-5'><label for='post-5'>top-right</label><br>
     <input type='checkbox' id='post-6'><label for='post-6'>bottom-right</label><br>
     <input type='checkbox' id='post-7'><label for='post-7'>bottom-left</label><br>
@@ -613,23 +633,23 @@ div.postbuild-5 {
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-9'><label for='pre-9'>fade in</label><br>
     <input type='checkbox' id='pre-10'><label for='pre-10'>rotate in</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-9'><label for='post-9'>fade out</label><br>
     <input type='checkbox' id='post-10'><label for='post-10'>rotate out</label>
   </td>
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-11'><label for='pre-11'>pop topmost</label><br>
     <input type='checkbox' id='pre-12'><label for='pre-12'>push bottom</label><br>
     <input type='checkbox' id='pre-13'><label for='pre-13'>restore</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-11'><label for='post-11'>pop topmost</label><br>
     <input type='checkbox' id='post-12'><label for='post-12'>push bottom</label><br>
     <input type='checkbox' id='post-13'><label for='post-13'>restore</label>
@@ -637,13 +657,13 @@ div.postbuild-5 {
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
+  <td>
     <input type='checkbox' id='pre-14'><label for='pre-14'>scale from 0.6</label><br>
     <input type='checkbox' id='pre-15'><label for='pre-15'>scale from 0.8</label><br>
     <input type='checkbox' id='pre-16'><label for='pre-16'>scale from 1.2</label><br>
     <input type='checkbox' id='pre-17'><label for='pre-17'>scale from 1.4</label>
   </td>
-  <td onclick='setPostTagValue(event)'>
+  <td>
     <input type='checkbox' id='post-14'><label for='post-14'>scale to 0.6</label><br>
     <input type='checkbox' id='post-15'><label for='post-15'>scale to 0.8</label><br>
     <input type='checkbox' id='post-16'><label for='post-16'>scale to 1.2</label><br>
@@ -652,16 +672,18 @@ div.postbuild-5 {
 </tr>
 
 <tr>
-  <td onclick='setPreTagValue(event)'>
-    <div id='pre-play' style='display:none'><input type='checkbox' id='pre-18'><label for='pre-18'>play</label></div>
+  <td>
+    <div id='preplay-18' style='display:none'><input type='checkbox' id='pre-18'><label for='pre-18'>play</label></div>
+    <div id='preplay-19' style='display:none'><input type='checkbox' id='pre-19'><label for='pre-19'>pause</label></div>
   </td>
-  <td onclick='setPostTagValue(event)'>
-    <div id='post-play' style='display:none'><input type='checkbox' id='post-19'><label for='post-19'>continue</label></div>
+  <td>
+    <div id='postplay-18' style='display:none'><input type='checkbox' id='post-18'><label for='post-18'>play</label></div>
+    <div id='postplay-19' style='display:none'><input type='checkbox' id='post-19'><label for='post-19'>pause</label></div>
   </td>
 </tr>
 
 <tr>
-  <td style='outline:#666 solid 2px' onclick='setPreSpeed(event)'>
+  <td style='outline:#666 solid 2px'>
     <input type='checkbox' id='prespeed-1'><label for='prespeed-1'>fastest</label><br>
     <input type='checkbox' id='prespeed-2'><label for='prespeed-2'>faster</label><br>
     <input type='checkbox' id='prespeed-3' checked='checked'><label for='prespeed-3'>normal</label><br>
@@ -671,7 +693,7 @@ div.postbuild-5 {
   <td>
     <input type='checkbox' id='joinPrev' /><label for='joinPrev'>join to previous step</label>
   </td>
-  <td style='outline:#666 solid 2px' onclick='setPostSpeed(event)'>
+  <td style='outline:#666 solid 2px'>
     <input type='checkbox' id='postspeed-1'><label for='postspeed-1'>fastest</label><br>
     <input type='checkbox' id='postspeed-2'><label for='postspeed-2'>faster</label><br>
     <input type='checkbox' id='postspeed-3' checked='checked'><label for='postspeed-3'>normal</label><br>

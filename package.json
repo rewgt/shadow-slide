@@ -4,7 +4,7 @@
   "description": "A PPT-like document creator that powered by shadow-widget",
   "main": "index.js",
   "scripts": {
-    "start": "watchify index.js -v -o bundle.js -t [ babelify --presets [ es2015 react ] ]",
+    "start": "watchify src/index_dev.js -v -o bundle.js -t [ babelify --presets [ es2015 react ] ]",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -18,6 +18,6 @@
   "dependencies": {
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "shadow-widget": "^0.0.2"
+    "shadow-widget": "^0.0.4"
   }
 }
