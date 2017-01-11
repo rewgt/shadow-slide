@@ -30,3 +30,5 @@ Shadow Slide 是一款开源的免费软件，发行版已将它所依赖的 <a 
 运行后，请在 Web 浏览器访问 `http://localhost:3000/shadow-slide/`，看看是否正常打开一份演示胶片样例。
 
 在 Web 浏览器访问 `http://localhost:3000/shadow-slide/output/doc/doc_zh/`，可查阅 Shadow Slide 用户手册。
+
+<a target="_blank" href="https://rewgt.github.io/shadow-slide/sample.html">点击打开 github 上的一份演示样例</a>
