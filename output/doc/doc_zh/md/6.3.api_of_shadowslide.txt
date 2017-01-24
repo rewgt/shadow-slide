@@ -4,6 +4,8 @@
 &nbsp;
 
 > WTC 类
+> - [`rewgt.DrawPaper`](#6.3.!draw_paper)
+> - [`rewgt.SvgPanel`](#6.3.!svg_panel)
 > - [`rewgt.GotoPage`](#6.3.!goto_page)
 > - [`rewgt.DelayTimer`](#6.3.!delay_timer)
 
@@ -11,6 +13,50 @@
 > - [`utils.pageCtrl`](#6.3.!page_ctrl)
 
 &nbsp;
+
+##### <a name="draw_paper"></a>`rewgt.DrawPaper`
+
+> 本类定义绘图纸，继承自 `Panel`（请参考 Shadow Widget API 手册）。
+
+&nbsp;
+
+> **`_statedProp` 新增定义：** `'defId'`   
+`defId` 用于 SVG 绘图中标识 `marker-start` 与 `marker-end` 引用名，每个 `DrawPaper` 构件都自动生成一个唯一的 `defId` 标识，用户不必编辑此属性。
+
+> **`getDefaultProps()` 新增属性：** 无。
+
+> **新增 duals 属性：**
+> - `offsetX: 0`   
+绘图区的 X 轴偏移。
+> - `offsetY: 0`   
+绘图区的 Y 轴偏移。
+
+##### <a name="svg_panel"></a>`rewgt.SvgPanel`
+
+> 本类定义 SVG 绘图单元 ，继承自 `Panel`（请参考 Shadow Widget API 手册）。
+
+&nbsp;
+
+> **`getDefaultProps()` 新增属性：** 无。
+
+> **新增 duals 属性：**
+> - `'html.': ''`   
+在 SVG 绘图单元上显示的文本，用 markdown 格式描述。
+> - `rotate: 0`   
+背景 SVG 图片的旋转角度，取值应为 `0 ~ 360` 之间的数值，图片将以中心点为基准，顺时针旋转指定角度。
+> - `cfg`   
+定义绘图数据，格式为 `[iStyle, bExtraCfg, imageData, ...]`。其中 `imageData` 表达一个 SVG 图片，`imageData` 可以有 1 个，2 个，或者 3 个。   
+`iStyle` 指示绘图类型，值为 `-2` 表示绘制曲线，`-1` 表示绘制直线，`0` 表示绘制单图，`1` 表示从左向右绘制双图或三图，`2` 表示从上向下绘制双图或三图。如果绘制双图，`1` 与 `2` 均为尾图固定尺寸、首图拉抻，若绘制三图则中间固定、首尾拉抻。`iStyle` 为 `9` 表示从左向右绘制双图或三图，同 `1`，但固定与拉抻位置互换，`iStyle` 为 `10` 表示从上向下绘制双图或三图，同 `2`，但固定与拉抻位置互换。   
+`bExtraCfg` 格式为 `[sStrokeLineFormat,0, iPreType,iPostType, x,y, ...]`，其中 `sStrokeLineFormat` 指示线型，`iPreType` 与 `iPostType` 分别定义起止箭头的形态，`x,y` 定义点座标，可以定义多个座标点，在绘制直线或曲线时使用。   
+`imageData` 定义 SVG 图片数据，包括 `imageData.width` 与 `imageData.height` 定义绘图 `viewport` 的宽与高，`imageData.svg` 定义 SVG 格式的绘图内容，`imageData.scalable` 表示在 viewport 中是否以百分比定位来绘图，如果是 “百分比” 图片尺寸自适应，否则以整体拉抻来适应。`imageData` 还可以用 URL 字串指向某个 json 文件，其值将从 json 文件自动读取。
+> - `strentch: '1'`   
+是否拉抻图片来适应当前构件的宽高，值为 `'1'` 表示拉抻，空字串表示不拉抻。
+> - `stroke: 3`   
+SVG 绘图所用的线条宽度，以像素为单位。
+> - `style.strokeColor: '#333'`   
+SVG 绘图颜色。
+> - `style.fillColor: '#eee'`   
+SVG 绘图的填充颜色。
 
 ##### <a name="goto_page"></a>`rewgt.GotoPage`
 

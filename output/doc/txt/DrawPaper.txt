@@ -1,0 +1,5 @@
+DrawPaper
+6.3.!draw_paper
+[ duals ]
+  offsetX: 0
+  offsetY: 0

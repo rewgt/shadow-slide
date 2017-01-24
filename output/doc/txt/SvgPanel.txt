@@ -1,0 +1,10 @@
+SvgPanel
+6.3.!svg_panel
+[ duals ]
+  'html.': ''
+  rotate: 0
+  cfg
+  strentch: '1'
+  stroke: 3
+  style.strokeColor: '#333'
+  style.fillColor: '#eee'

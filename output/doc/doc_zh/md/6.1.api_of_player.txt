@@ -3,7 +3,7 @@
 
 &nbsp;
 
-可播放组件为 step 单步额外提供 `play, pause, continue` 等操作选项，一个组件是否可播放，由它的 `props['step.play']` 取值是否为真来决定。Shadow Slide 提供的翻页器 `rewgt.GotoPage` 与定时器 `rewgt.DelayTimer` 都是可 play 组件。
+可播放组件为 step 单步额外提供 play、pause 等操作选项，一个组件是否可播放，由它的 `props['step.play']` 取值是否为真来决定。Shadow Slide 提供的翻页器 `rewgt.GotoPage` 与定时器 `rewgt.DelayTimer` 都是可 play 组件。
 
 &nbsp;
 

@@ -1,0 +1,29 @@
+6.4 step 配置按钮
+-----------
+
+&nbsp;
+
+在 Shadow Widget 的可视化设计器中，胶片页下的组件选中后，用 Config pre-post step 浮动按钮 ![pre-post](md/res/step_btn.png) 可召唤配置 step 单步的弹窗。该扩展工具项在 `"shadow-slide/TOOL.json"` 文件有定义，规格如下：
+
+```
+  {
+    "name": "step",
+    "icon": "/app/rewgt/shadow-slide/web/output/step.png",
+    "title": "config pre-post step",
+    "url": "/app/rewgt/shadow-slide/web/output/edit_prepost.html",
+    "halfScreen": true,
+    "noMove": false,
+    "clickable": true,
+    "onlyScene": true,
+    "left": 0.05,
+    "top": 0.05,
+    "width": 0.9,
+    "height": 0.9
+  }
+```
+
+如果用户自行扩展构件样板，可拷贝上述定义，请参考 ShadowWidget 可视化计使用手册中 “5.3 定制与扩展” 相关内容。
+
+shadow-slide 工程定义了 `"rewgt/shadow-slide/steps", "rewgt/shadow-slide/step0", "rewgt/shadow-slide/step1"` 三种工具集。分别表达如下情况：所有子成员可编辑、子成员不可改、子成员仅属性可改。如无特殊需求，工具集 ID 选这三项之一即可。
+
+&nbsp;

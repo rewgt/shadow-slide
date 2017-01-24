@@ -4,13 +4,698 @@ var React = require('react');        // var React = window.React;
 var ReactDOM = require('react-dom'); // var ReactDOM = window.ReactDOM;
 var W = require('shadow-widget');    // var W = window.W;
                                      // if (!React || !ReactDOM || !W) console.log('fatal error: invalid cdn version of react or shadow-widget.');
+
 var T = W.$templates, creator = W.$creator;
 var utils = W.$utils, ex = W.$ex, main = W.$main;
+
+var TRANS_END_FUNC   = '';
+var TRANS_CSS_NAME   = '';
+
+(function() {
+  var vendor = utils.vendorId || [], sVendor = vendor[0] || '';
+  if (sVendor == 'ie') {
+    TRANS_END_FUNC = 'MSTransitionEnd';
+    if (vendor[1])
+      TRANS_CSS_NAME = 'transform'; // 'transform' and 'msTransform' both can work
+    else {
+      TRANS_CSS_NAME = 'msTransform';
+      console.log('!warning: IE version too low, please use IE11 or higher');
+    }
+  }
+  else if (sVendor == 'firefox') {
+    TRANS_END_FUNC = 'transitionend';
+    TRANS_CSS_NAME = 'transform';
+  }
+  else if (sVendor == 'opera') {
+    TRANS_END_FUNC = 'oTransitionEnd';
+    TRANS_CSS_NAME = 'transform';
+  }
+  else if (sVendor == 'chrome' || sVendor == 'safari' || sVendor == 'webkit') {
+    TRANS_END_FUNC = 'webkitTransitionEnd';
+    TRANS_CSS_NAME = 'WebkitTransform';
+  }
+  else  // only support firefox/chrome/safari/opera/IE
+    console.log('!fatal error: unknown web browser type');
+})();
+
+if (!T.rewgt) T.rewgt = {};
 
 var containNode_   = null;
 var topmostWidget_ = null;
 
 var widgetBaseUrl_ = '/app/rewgt/shadow-slide/web/output';
+
+var ARROW_SIDE_FACTOR = 4;  // 1,2,3...
+
+function getDefaultOpt_(self) {
+  return { type: 'mono', // mono, extend
+    editable: 'all',     // all, some, none
+    baseUrl: widgetBaseUrl_,
+    tools: [],
+  };
+}
+
+class TDrawPaper_ extends T.Panel_ {
+  constructor(name,desc) {
+    super(name || 'rewgt.DrawPaper',desc);
+    // this._docUrl = 'doc';  // default is 'doc'
+    this._statedProp.push('defId');
+    this._defaultProp.offsetX = 0;
+    this._defaultProp.offsetY = 0;
+    this._silentProp.push('drawPaper.');
+  }
+  
+  _getGroupOpt(self) {
+    return getDefaultOpt_(self);
+  }
+  
+  _getSchema(self,iLevel) {
+    iLevel = iLevel || 1200;
+    var schema = super._getSchema(self,iLevel+200);
+    schema['offsetX'] = [iLevel+1,'number',null,'[number]: N pixels'];
+    schema['offsetY'] = [iLevel+2,'number',null,'[number]: N pixels'];
+    schema['defId'] = [iLevel+3,'string',null,'[string]: SVG marker ID'];
+    return schema;
+  }
+  
+  getDefaultProps() {
+    var props = super.getDefaultProps();
+    props['drawPaper.'] = true;
+    props.offsetX = 0;
+    props.offsetY = 0;
+    return props;
+  }
+  
+  getInitialState() {
+    var state = super.getInitialState();
+    
+    var defId = this.props.defId;
+    if (!defId || typeof defId != 'string')
+      defId = '_' + Math.floor((new Date()).valueOf() / 1000);
+    else defId = defId.slice(0,32);  // max 32 char
+    state.defId = defId;
+    
+    state.offsetX = parseInt(this.props.offsetX) || 0;
+    state.offsetY = parseInt(this.props.offsetY) || 0;
+    this.defineDual('offsetX');
+    this.defineDual('offsetY');
+    
+    return state;
+  }
+  
+  render() {
+    utils.syncProps(this);
+    if (this.hideThis) return null;
+    
+    var bChild = this.prepareState();
+    var divStyle = { margin: this.state.offsetY+'px 0 0 '+this.state.offsetX+'px' };
+    var div = React.createElement('div',{className:'rewgt-paperview',style:divStyle},bChild);
+    
+    var dStyle = Object.assign({},this.state.style,{backgroundPosition:this.state.offsetX+'px '+this.state.offsetY+'px'});
+    var props = utils.setupRenderProp(this,dStyle);
+    return React.createElement('div',props,div);
+  }
+}
+
+T.rewgt.DrawPaper_ = TDrawPaper_;
+T.rewgt.DrawPaper  = new TDrawPaper_();
+
+var re_g_node_ = /<g\b[^>]* _cfg=[^>]*>/gm;
+var re_widget_ = / _cfg=['"].*?["']/m;
+var re_stroke_ = /\bstroke=['"].*?["']/m;
+var re_fill_   = /\bfill=['"].*?["']/m;
+var re_width_  = /\bstroke-width=['"].*?["']/m;
+var re_dash_   = /\bstroke-dasharray=['"].*?["']/m;
+
+function setupSvgDataUrl_(sHtml,sStrokeColor,sBackColor,iStrokeWd,sStrokeDash) {
+  re_g_node_.lastIndex = 0;
+  var m = re_g_node_.exec(sHtml), sNew = '', index = 0;
+  while (m) {
+    var s = m[0];
+    sNew += sHtml.slice(index,m.index);
+    
+    s = s.replace(re_widget_,'')
+         .replace(re_stroke_,"stroke='" + sStrokeColor + "'")
+         .replace(re_fill_,"fill='" + sBackColor + "'")
+         .replace(re_width_,"stroke-width='" + iStrokeWd + "'")
+         .replace(re_dash_,"stroke-dasharray='" + sStrokeDash + "'");
+    sNew += s;
+    
+    index = re_g_node_.lastIndex;
+    m = re_g_node_.exec(sHtml);
+  }
+  if (index < sHtml.length) sNew += sHtml.slice(index);
+  return sNew;  // 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sNew) + '")'
+}
+
+function getCtrlPoint_(x1,y1,x2,y2,x3,y3,x4,y4) {
+  var k1=0.35, k2=0.333;
+  if (x1 === undefined) {
+    if (x4 === undefined)   // only two points: p2,p3
+      return [x2,y2,x3,y3];
+    // else, has p2,p3,p4
+    
+    var d23=getAngleLen(x2,y2,x3,y3), L23=d23[0];
+    var d34=getAngleLen(x3,y3,x4,y4), L34=d34[0];
+    var a = Math.abs(d34[1]-d23[1]);
+    if (a > 180) a = 360-a;
+    if (a >= 90) {
+      k1 = 0.38;
+      k2 = 0.333 - 0.266 * (a-90) / 180;
+    }
+    else k2 = 0.2 + 0.266 * a / 180;
+    
+    var rateB = (L23 * k1) / L34;
+    var b1X = x3 - rateB * (x4-x3);
+    var b1Y = y3 - rateB * (y4-y3);
+    var b2X = b1X - (b1X-x2)*k2;
+    var b2Y = b1Y - (b1Y-y2)*k2;
+    
+    var a2X = x2 + (b1X-x2)*k2;
+    var a2Y = y2 + (b1Y-y2)*k2;
+    return [a2X,a2Y,b2X,b2Y];
+  }
+  else {
+    var d12=getAngleLen(x1,y1,x2,y2), L12=d12[0];
+    var d23=getAngleLen(x2,y2,x3,y3), L23=d23[0];
+    var a = Math.abs(d23[1]-d12[1]);
+    if (a > 180) a = 360-a;
+    if (a >= 90) {
+      k1 = 0.38;
+      k2 = 0.333 - 0.266 * (a-90) / 180;
+    }
+    else k2 = 0.2 + 0.266 * a / 180;
+    
+    var rateA = (L23 * k1) / L12;
+    var a1X = x2 + rateA * (x2-x1);
+    var a1Y = y2 + rateA * (y2-y1);
+    var a2X = a1X + (x3-a1X)*k2;
+    var a2Y = a1Y + (y3-a1Y)*k2;
+    
+    var b2X,b2Y;
+    if (x4 === undefined) { // p1,p2,p3
+      b2X = x3 - (x3-a1X)*k2;
+      b2Y = y3 - (y3-a1Y)*k2;
+    }
+    else {  // p1,p2,p3,p4
+      var d34=getAngleLen(x3,y3,x4,y4), L34=d34[0];
+      var a = Math.abs(d34[1]-d23[1]);
+      if (a > 180) a = 360-a;
+      if (a >= 90) {
+        k1 = 0.38;
+        k2 = 0.333 - 0.266 * (a-90) / 180;
+      }
+      else k2 = 0.2 + 0.266 * a / 180;
+      
+      var rateB = (L23 * k1) / L34;
+      var b1X = x3 - rateB * (x4-x3);
+      var b1Y = y3 - rateB * (y4-y3);
+      b2X = b1X - (b1X-x2)*k2;
+      b2Y = b1Y - (b1Y-y2)*k2;
+    }
+    return [a2X,a2Y,b2X,b2Y];
+  }
+  
+  function getAngleLen(x1,y1,x2,y2) {
+    var detaX=x2-x1, detaY=y2-y1;
+    var x = Math.abs(detaX);
+    var y = Math.abs(detaY);
+    var z = Math.sqrt(x*x + y*y);
+    var radina = Math.acos(y/z);  // cos = y/z
+    var ang = 180 / (Math.PI / radina);
+    
+    if (detaX > 0)
+      return [z,(detaY > 0)? (90 - ang): (270 + ang)];
+    else return [z,(detaY > 0)? (90 + ang): (270 - ang)];
+  }
+}
+
+var svgCache_ = {};
+
+function getAllSvgData_(bReading, nextStep) {
+  var iNum = bReading.length, iErr = 0, iSucc = 0;
+  if (iNum == 0) {
+    nextStep();
+    return;
+  }
+  
+  bReading.forEach( function(item,idx) {
+    var sUrl = item[1];
+    getSvg(sUrl, function(data) {
+      item[1] = data;
+      if (!data) {
+        console.log('warning: read JSON failed (' + sUrl + ')');
+        iErr += 1;
+      }
+      else iSucc += 1;
+      if (iErr + iSucc >= iNum) nextStep(iErr == 0);
+    });
+  });
+  
+  function getSvg(sUrl,callback) {
+    var old = svgCache_[sUrl];
+    if (old) {
+      callback(old);
+      return;
+    }
+    
+    utils.ajax({ type:'GET', url:sUrl, dataType:'json',
+      success: function(data,statusText,xhr) {
+        svgCache_[sUrl] = data;
+        callback(data);
+      },
+      error: function(xhr,statusText) {
+        callback(null);
+      },
+    });
+  }
+}
+
+function redrawSvg_(self) {
+  var bCfg = self.state['svg.cfg']; // [iStyle,bSubCfg,imgData, ...]
+  if (!Array.isArray(bCfg) || bCfg.length < 3) return;  // invalid format, ignore
+  
+  var sMarked = self.state.marked || '';
+  var iStrokeWd = self.state.stroke || 3;  // stroke can not be 0
+  var style = self.state.style || {};
+  var sStrokeColor = style.strokeColor || '#888';
+  var sFillColor = style.fillColor || '#eee';
+  
+  var imgs = bCfg.slice(2), imgNum = imgs.length, bReading = [];
+  for (var i=0; i < imgNum; i++) {
+    var item = imgs[i];
+    if (typeof item == 'string')
+      bReading.push([i,item]);
+  }
+  getAllSvgData_(bReading,nextStep);
+  
+  function nextStep(succ) {
+    if (!succ) return;     // ignore drawing
+    for (var i=bReading.length-1; i >= 0; i--) {
+      var item = bReading[i];
+      imgs[item[0]] = item[1];
+    }
+    
+    var iStyle = bCfg[0], fixFirst = false;
+    if (iStyle >= 8) {
+      fixFirst = true;
+      iStyle -= 8;
+    }
+    var arrowCfg = bCfg[1], sStrokeDash = '';
+    if (Array.isArray(arrowCfg) && arrowCfg.length >= 1)
+      sStrokeDash = arrowCfg[0];
+    else arrowCfg = null;
+    
+    var iWholeWd = self.state.width, iWholeHi = self.state.height;
+    if (isNaN(iWholeWd) || iWholeWd < 0)
+      iWholeWd = 200;
+    else if (iWholeWd < 1) {
+      var parentWd = self.state.parentWidth;
+      iWholeWd = isNaN(parentWd)? 200: iWholeWd * parentWd;
+    } // else iWholeWd >= 1
+    if (isNaN(iWholeHi) || iWholeHi < 0)
+      iWholeHi = 60;
+    else if (iWholeHi < 1) {
+      var parentHi = self.state.parentHeight;
+      iWholeHi = isNaN(parentHi)? 60: iWholeHi * parentHi;
+    } // else iWholeHi >= 1
+    
+    if (imgNum == 1 && iStyle >= 0) {
+      var _svg=imgs[0], sHtml=_svg.svg, iWd=_svg.width, iHi=_svg.height;
+      
+      var sRect = _svg.scalable? (iWholeWd + '" height="' + iWholeHi): (iWd + '" height="' + iHi);
+      sRect = 'width="' + sRect + '" viewPort="0 0 ' + iWd + ' ' + iHi + '" ';
+      sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + sHtml + '</svg>';
+      
+      sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+      sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+      self.duals.style = {backgroundImage:sHtml};
+      return;
+    }
+    
+    if ((iStyle == -1 || iStyle == -2) && arrowCfg && imgNum == 1) { // build line-arrow
+      var _svg=imgs[0], iLen=arrowCfg.length;
+      if (iLen < 8) return; // ['',0, 0,2, x,y, x,y]
+      
+      var ownerComp = self.widget, defId = 'mrk_';
+      if (ownerComp) {
+        ownerComp = ownerComp.parent;
+        if (ownerComp) {
+          ownerComp = ownerComp.component;
+          if (ownerComp) {
+            var defId_ = ownerComp.state.defId;
+            if (defId_) defId = defId_;  // must be string
+          }
+        }
+      }
+      defId += (self.$gui.keyid + '');
+      
+      var preType=arrowCfg[2], postType=arrowCfg[3];  // arrowCfg[1] is reserved
+      var sDashArray = "stroke-dasharray='" + sStrokeDash + "' ";
+      
+      var preMarker='', preDef='';
+      if (preType >= 1) { // -1:disabled, 0:none, 1:line, 2~11: arrows
+        var preTag = 'mrk' + preType + '_start';
+        preDef = _svg[preTag];
+        if (!preDef) return;
+        
+        var preTag2 = defId + '_start';
+        preDef = preDef.replace(preTag,preTag2);
+        preMarker = "marker-start='url(#" + preTag2 + ")' ";
+      }
+      var postMarker='', postDef='';
+      if (postType >= 1) {
+        var postTag = 'mrk' + postType + '_end';
+        postDef = _svg[postTag];
+        if (!postDef) return;
+        
+        var postTag2 = defId + '_end';
+        postDef = postDef.replace(postTag,postTag2);
+        postMarker = "marker-end='url(#" + postTag2 + ")' ";
+      }
+      
+      var iSideGap = Math.floor(iStrokeWd * 2.5 + 0.5);
+      iSideGap *= ARROW_SIDE_FACTOR;
+      if (iWholeWd <= iSideGap+iSideGap || iWholeHi <= iSideGap+iSideGap)
+        return; // failed, too small
+      var iWd=0, iHi=0;
+      for (var i=5; i < iLen; i+=2) {
+        var x=arrowCfg[i-1], y=arrowCfg[i];
+        if (x > iWd) iWd = x;
+        if (y > iHi) iHi = y;
+      }
+      var rateX = iWd == 0? 0: (iWholeWd-iSideGap-iSideGap)/iWd;
+      var rateY = iHi == 0? 0: (iWholeHi-iSideGap-iSideGap)/iHi;
+      var bNew=[], lastPtX=undefined, lastPtY=undefined;
+      for (var i=5; i < iLen; i+=2) {
+        var iCurX = arrowCfg[i-1]*rateX + iSideGap;
+        var iCurY = arrowCfg[i]*rateY + iSideGap;
+        if (lastPtX !== iCurX || lastPtY !== iCurY) {
+          bNew.push(iCurX,iCurY);
+          lastPtX = iCurX; lastPtY = iCurY;
+        } // else, ignore same point
+      }
+      
+      var sPoints='', sPath='';
+      if (iStyle == -1) {
+        var iNewLen = bNew.length;
+        for (var i=1; i < iNewLen; i+=2) {
+          if (i > 1) sPoints += ' ';
+          sPoints += bNew[i-1] + ',' + bNew[i];
+        }
+      }
+      else {  // iStyle == -2
+        var iNewLen = bNew.length;
+        if (iNewLen == 4) {
+          sPath = 'M' + bNew[0] + ' ' + bNew[1] + 'L' + bNew[2] + ' ' + bNew[3];
+        }
+        else {
+          bNew.unshift(undefined,undefined);
+          iNewLen += 2;
+          
+          sPath = 'M' + bNew[2] + ' ' + bNew[3];
+          for (var i=3; i < iNewLen; i+=2) {
+            var x1=bNew[i-3], y1=bNew[i-2], x2=bNew[i-1], y2=bNew[i];
+            if (i <= iNewLen-3) {
+              var x3=bNew[i+1], y3=bNew[i+2], x4=undefined, y4=undefined;
+              if (i <= iNewLen-5) {
+                x4 = bNew[i+3];
+                y4 = bNew[i+4];
+              }
+              var ctrls = getCtrlPoint_(x1,y1,x2,y2,x3,y3,x4,y4);
+              sPath += 'C' + ctrls[0] + ' ' + ctrls[1] + ' ' + ctrls[2] + ' ' + ctrls[3] + ' ' + x3 + ' ' + y3;
+            }
+            else break;
+          }
+        }
+      }
+      
+      var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + iWholeWd + ' ' + iWholeHi + '" ';
+      var sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">';
+      sHtml += "<g stroke='" + sStrokeColor + "' fill='" + sFillColor + "' " + sDashArray + "stroke-width='" + iStrokeWd + "'>";
+      if (preDef || postDef) sHtml += '<defs>' + preDef + postDef + '</defs>';
+      if (iStyle == -1)
+        sHtml += "<polyline " + preMarker + postMarker + "fill='rgba(0,0,0,0)' points='" + sPoints + "'/>";
+      else sHtml += "<path " + preMarker + postMarker + "fill='rgba(0,0,0,0)' d='" + sPath + "'/>";
+      sHtml += "</g></svg>";
+      
+      sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+      sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+      self.duals.style = {backgroundImage:sHtml};
+      return;
+    }
+    
+    if (imgNum == 2) {
+      var _svg=imgs[0], _svg2=imgs[1];
+      var sHtml=_svg.svg, sHtml2=_svg2.svg;
+      var iWd=_svg.width, iHi=_svg.height, iWd2=_svg2.width, iHi2=_svg2.height;
+      
+      if (iStyle == 1) { // left --> right
+        if (iHi != iHi2) return;
+        
+        var x,x2, svgWd=iHi*iWholeWd/iWholeHi;
+        if (fixFirst) {
+          x = iWd; x2 = svgWd-iWd;
+          if (x2 <= 0) return;  // ignore drawing
+          sHtml2 = '<g transform="translate(' + (x-1) + ',0) scale(' + ((x2+1)/iWd2) + ',1)">' + sHtml2 + '</g>';
+          sHtml = sHtml + sHtml2;
+        }
+        else {
+          x = svgWd-iWd2; x2=iWd2;
+          if (x <= 0) return;  // ignore drawing
+          sHtml  = '<g transform="scale(' + ((x+1)/iWd) + ',1)">' + sHtml + '</g>';
+          sHtml2 = '<g transform="translate(' + x + ',0)">' + sHtml2 + '</g>';
+          sHtml = sHtml + sHtml2;
+        }
+        
+        var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + svgWd + ' ' + iHi + '" ';
+        var fScale = iWholeHi / iHi;
+        sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + 
+                '<g transform="scale(' + fScale + ',' + fScale + ')">' + sHtml + '</g></svg>';
+        
+        sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+        sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+        self.duals.style = {backgroundImage:sHtml};
+      }
+      else if (iStyle == 2) {  // top --> bottom
+        if (iWd != iWd2) return;
+        
+        var y,y2, svgHi=iWd*iWholeHi/iWholeWd;
+        if (fixFirst) {
+          y = iHi; y2 = svgHi-iHi;
+          if (y2 <= 0) return;
+          sHtml2 = '<g transform="translate(0,' + (y-1) + ') scale(1,' + ((y2+1)/iHi2) + ')">' + sHtml2 + '</g>';
+          sHtml = sHtml + sHtml2;
+        }
+        else {
+          y = svgHi-iHi2; y2 = iHi2;
+          if (y <= 0) return;
+          sHtml = '<g transform="scale(1,' + ((y+1)/iHi) + ')">' + sHtml + '</g>';
+          sHtml2 = '<g transform="translate(0,' + y + ')">' + sHtml2 + '</g>';
+          sHtml = sHtml + sHtml2;
+        }
+        
+        var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + iWd + ' ' + svgHi + '" ';
+        var fScale = iWholeWd / iWd;
+        sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + 
+                '<g transform="scale(' + fScale + ',' + fScale + ')">' + sHtml + '</g></svg>';
+        
+        sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+        sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+        self.duals.style = {backgroundImage:sHtml};
+      }
+      // else, invalid iStyle, ignore drawing
+      return;
+    }
+    
+    if (imgNum == 3) {
+      var _svg=imgs[0], _svg2=imgs[1], _svg3=imgs[2];
+      var sHtml=_svg.svg, sHtml2=_svg2.svg, sHtml3=_svg3.svg;
+      var iWd=_svg.width, iHi=_svg.height, iWd2=_svg2.width, iHi2=_svg2.height, iWd3=_svg3.width, iHi3=_svg3.height;
+      
+      if (iStyle == 1) { // left-middle-right, fixFirst means left/right fixed, else middle fixed
+        if (iHi != iHi2 || iHi2 != iHi3) return;
+        
+        var x,x2,x3, svgWd=iHi*iWholeWd/iWholeHi;
+        if (fixFirst) {
+          x = iWd; x2 = svgWd-iWd-iWd3; x3 = iWd3;
+          if (x2 <= 0) return;
+          sHtml2 = '<g transform="translate(' + (x-1) + ',0) scale(' + ((x2+2)/iWd2) + ',1)">' + sHtml2 + '</g>';
+          sHtml3 = '<g transform="translate(' + (x+x2) + ',0)">' + sHtml3 + '</g>';
+          sHtml = sHtml + sHtml2 + sHtml3;
+        }
+        else {
+          x = (svgWd-iWd2)*iWd/(iWd+iWd3); x2 = iWd2; x3 = svgWd-x-iWd2;
+          if (x <= 0 || x3 <= 0) return;
+          sHtml  = '<g transform="scale(' + ((x+1)/iWd) + ',1)">' + sHtml + '</g>';
+          sHtml2 = '<g transform="translate(' + x + ',0)">' + sHtml2 + '</g>';
+          sHtml3 = '<g transform="translate(' + (x+x2-1) + ',0) scale(' + ((x3+1)/iWd3) + ',1)">' + sHtml3 + '</g>';
+          sHtml = sHtml + sHtml2 + sHtml3;
+        }
+        
+        var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + svgWd + ' ' + iHi + '" ';
+        var fScale = iWholeHi / iHi;
+        sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + 
+                '<g transform="scale(' + fScale + ',' + fScale + ')"' + '>' + sHtml + '</g></svg>';
+        
+        sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+        sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+        self.duals.style = {backgroundImage:sHtml};
+      }
+      else if (iStyle == 2) { // top-middle-bottom, fixFirst means top/bottom fixed, else middle fixed
+        if (iWd != iWd2 || iWd2 != iWd3) return;
+        
+        var y,y2,y3, svgHi=iWd*iWholeHi/iWholeWd;
+        if (fixFirst) {
+          y = iHi; y2 = svgHi-iHi-iHi3; y3 = iHi3;
+          if (y2 <= 0) return;
+          sHtml2 = '<g transform="translate(0,' + (y-1) + ') scale(1,' + ((y2+2)/iHi2) + ')">' + sHtml2 + '</g>';
+          sHtml3 = '<g transform="translate(0,' + (y+y2) + ')">' + sHtml3 + '</g>';
+          sHtml = sHtml + sHtml2 + sHtml3;
+        }
+        else {
+          y = (svgHi-iHi2)*iHi/(iHi+iHi3); y2 = iHi2; y3 = svgHi-y-y2;
+          if (y <= 0 || y3 <= 0) return;
+          sHtml = '<g transform="scale(1,' + ((y+1)/iHi) + ')">' + sHtml + '</g>';
+          sHtml2 = '<g transform="translate(0,' + y + ')">' + sHtml2 + '</g>';
+          sHtml3 = '<g transform="translate(0,' + (y+y2-1) + ') scale(1,' + ((y3+1)/iHi3) + ')">' + sHtml3 + '</g>';
+          sHtml = sHtml + sHtml2 + sHtml3;
+        }
+        
+        var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + iWd + ' ' + svgHi + '" ';
+        var fScale = iWholeWd / iWd;
+        sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + 
+                '<g transform="scale(' + fScale + ',' + fScale + ')"' + '>' + sHtml + '</g></svg>';
+        
+        sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+        sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
+        self.duals.style = {backgroundImage:sHtml};
+      }
+      // else, ignore drawing
+    }
+    // else, ignore
+  }
+}
+
+class TSvgPanel_ extends T.Panel_ {
+  constructor(name,desc) {
+    super(name || 'rewgt.SvgPanel',desc);
+    // this._docUrl = 'doc';  // default is 'doc'
+    this._htmlText = true;
+    
+    this._defaultProp.stroke = 3;
+    this._defaultProp.width = 100;
+    this._defaultProp.height = 40;
+    this._defaultProp.strentch = '1';
+    this._defaultProp.rotate = 0;
+  }
+  
+  _getGroupOpt(self) {
+    return getDefaultOpt_(self);
+  }
+  
+  _getSchema(self,iLevel) {
+    iLevel = iLevel || 1200;
+    var schema = super._getSchema(self,iLevel+200);
+    schema.stroke = [iLevel+1,'number',null,'[number]: draw pan width, N pixels'];
+    schema.marked = [iLevel+2,'string',null,'[string]: markdown string'];
+    schema.strentch = [iLevel+3,'string',['','1'],'[string]: strentch image'];
+    schema.rotate = [iLevel+4,'number',null,'[number]: 0 ~ 360'];
+    return schema;
+  }
+  
+  getDefaultProps() {
+    var props = super.getDefaultProps();
+    props.stroke = 3;
+    props.width = 100;
+    props.height = 40;
+    props.strentch = '1';
+    props.rotate = 0;
+    return props;
+  }
+  
+  willResizing(wd, hi, inPending) {
+    var iOld = this.state.stroke; // no check inPending, using 'iOld != 0' avoid pending assign
+    if (iOld) {
+      this.state.stroke = 0;
+      this.duals.stroke = iOld;   // notify redraw
+    }
+    return true; // continue resizing event
+  }
+  
+  getInitialState() {
+    var state = super.getInitialState();
+    
+    var self = this, waitingDraw = false;
+    this.defineDual('html.', function(value,oldValue) {
+      if (!W.__design__) return;
+      
+      var newValue = this.state['html.'] = value || '';
+      if (!newValue) return;       // if no content, just ignore
+      
+      var txtNode = this.componentOf('txt');
+      if (!txtNode) {
+        setTimeout( function() {
+          var txtEle = utils.loadElement(['MarkedDiv',{ key:'txt',
+            'html.':newValue, width:0.9999,
+            klass:'default-large-small p1-p2-p3-p0 align_center-right-default',
+          }]);
+          self.setChild(txtEle, function() {
+            var txtNode_ = self.componentOf('txt');
+            if (!txtNode_) return;
+            txtNode_.listen('id__', function(value,oldValue) {
+              if (value <= 2) return;
+              self.state['html.'] = txtNode_.state['html.'] || '';  // keep same
+            });
+          });
+        },0);
+      }
+      // else, ignore
+    });
+    
+    this.defineDual('svg.cfg', function(value,oldValue) {
+      if (!Array.isArray(value)) return; // fatal error
+      redraw();
+    }); // default duals['svg.cfg'] is undefined, try redraw if ready
+    this.defineDual('strentch', function(value,oldValue) {
+      var sNew = this.state.strentch = value === '0'? '': (value?'1':'');
+      if (sNew) sNew = '100% 100%';
+      this.state.style = Object.assign({},this.state.style,{backgroundSize:sNew});
+    });
+    this.defineDual('stroke', function(value,oldValue) {
+      this.state.stroke = parseInt(value) || 3; // stroke can not be 0
+      redraw();
+    }); // default duals.stroke is undefined, try redraw if ready
+    this.defineDual('style', function(value,oldValue) {
+      if (value.strokeColor || value.fillColor)
+        redraw();
+    });
+    this.defineDual('rotate', function(value,oldValue) {
+      var iValue = this.state.rotate = parseInt(value) || 0;
+      var dStyle = this.state.style = Object.assign({},this.state.style);
+      dStyle[TRANS_CSS_NAME] = iValue == 0? '': 'rotate(' + iValue + 'deg)';
+    });
+    
+    this.listen('width',redraw);
+    this.listen('height',redraw);
+    
+    return state;
+    
+    function redraw(value,oldValue) {
+      waitingDraw = true;
+      setTimeout( function() {
+        if (waitingDraw) {    // if change any cfg/stroke/color, only draw one time
+          waitingDraw = false;
+          if (self.isHooked)
+            redrawSvg_(self); // will render in next tick
+        }
+      },0);
+    }
+  }
+}
+
+T.rewgt.SvgPanel_ = TSvgPanel_;
+T.rewgt.SvgPanel  = new TSvgPanel_();
 
 class TGotoPage_ extends T.Div_ {
   constructor(name,desc) {
@@ -20,11 +705,7 @@ class TGotoPage_ extends T.Div_ {
   }
   
   _getGroupOpt(self) {
-    return { type: 'mono', // mono, extend
-      editable: 'all',     // all, some, none
-      baseUrl: widgetBaseUrl_,
-      tools: [],
-    };
+    return getDefaultOpt_(self);
   }
   
   _getSchema(self,iLevel) {
@@ -101,7 +782,6 @@ class TGotoPage_ extends T.Div_ {
   }
 }
 
-if (!T.rewgt) T.rewgt = {};
 T.rewgt.GotoPage_ = TGotoPage_;
 T.rewgt.GotoPage  = new TGotoPage_();
 
@@ -113,11 +793,7 @@ class TDelayTimer_ extends T.P_ {
   }
   
   _getGroupOpt(self) {
-    return { type: 'mono',
-      editable: 'all',
-      baseUrl: widgetBaseUrl_,
-      tools: [],
-    };
+    return getDefaultOpt_(self);
   }
   
   _getSchema(self,iLevel) {
@@ -191,9 +867,6 @@ T.rewgt.DelayTimer_ = TDelayTimer_;
 T.rewgt.DelayTimer  = new TDelayTimer_();
 
 //---------------------------
-var TRANS_END_FUNC   = '';
-var TRANS_CSS_NAME   = '';
-
 var SLIDE_HALF_WIDTH  = 450;
 var SLIDE_HALF_HEIGHT = 350;
 var SLIDE_GAP_WIDTH   = 100;
@@ -473,43 +1146,24 @@ main.$onLoad.push( function() { // all functions in $onLoad not run when W.__des
     pageCtrl = utils.pageCtrl = new creator.pageCtrl_([]);
   }
   
-  var vendor = utils.vendorId || [], sVendor = vendor[0] || '';
-  if (sVendor == 'ie') {
-    TRANS_END_FUNC = 'MSTransitionEnd';
-    if (vendor[1])
-      TRANS_CSS_NAME = 'transform'; // 'transform' and 'msTransform' both can work
-    else {
-      TRANS_CSS_NAME = 'msTransform';
-      console.log('!warning: IE version too low, please use IE11 or higher');
-    }
-  }
-  else if (sVendor == 'firefox') {
-    TRANS_END_FUNC = 'transitionend';
-    TRANS_CSS_NAME = 'transform';
-  }
-  else if (sVendor == 'opera') {
-    TRANS_END_FUNC = 'oTransitionEnd';
-    TRANS_CSS_NAME = 'transform';
-  }
-  else if (sVendor == 'chrome' || sVendor == 'safari' || sVendor == 'webkit') {
-    TRANS_END_FUNC = 'webkitTransitionEnd';
-    TRANS_CSS_NAME = 'WebkitTransform';
-  }
-  else  // only support firefox/chrome/safari/opera/IE
-    console.log('!fatal error: unknown web browser type');
-  
   var config, withStepNext = false;
   var leftCtrl = pageCtrl.leftPanel, rightCtrl = pageCtrl.rightPanel;
   
   if (leftCtrl && rightCtrl && pageCtrl.gotoPage_) {  // can replace
+    var noOrgCfg = false;
     config = makeConfig();
     if (pageCtrl.config)
       config = Object.assign({},pageCtrl.config,config);
+    else noOrgCfg = true;
     pageCtrl.config = config;
     
     if (!pageCtrl.keys.length) {
-      // config.noSidebar = true;
-      // config.noKeypress = true;
+      if (noOrgCfg) {
+        if (config.noSidebar === undefined)
+          config.noSidebar = true; // if no ScenePage and not declare config, just hide sidebar
+        if (config.noKeypress === undefined)
+          config.noKeypress = true;
+      }
       config.autoplay = false; // slide page maybe defined later, cancel autoplay when current is empty
     }
     

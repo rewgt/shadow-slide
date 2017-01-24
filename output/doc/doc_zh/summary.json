@@ -26,6 +26,7 @@
 [0,"6.","附录","md/6.appendix.txt"],
 [1,"6.1.","可播放组件规格","md/6.1.api_of_player.txt"],
 [1,"6.2.","pageCtrl配置项","md/6.2.config_of_pagectrl.txt"],
-[1,"6.3.","API参考","md/6.3.api_of_shadowslide.txt"]
+[1,"6.3.","API参考","md/6.3.api_of_shadowslide.txt"],
+[1,"6.4.","step配置按钮","md/6.4.define_step_button.txt"]
 
 ]
