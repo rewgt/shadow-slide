@@ -9,9 +9,9 @@
 
 一个可播放组件，应定义如下几个 API：
 
-1) `stepPlay(iSpeed)`
+1) `stepPlay(fSpeed)`
 
-> 用于启动播放，参数 `iSpeed` 用来指示播放速率。继续播放（如果已播放且被暂停）也调用本函数。
+> 用于启动播放，参数 `fSpeed` 用来指示播放速率。继续播放（如果已播放且被暂停）也调用本函数。`fSpeed` 取值若为 `0`，表示按缺省速率播放，对于由 `pre-step` 或 `post-step` 触发的播放，配置项 `fastest, faster, normal, slower, slowest` 分别对应 `fSpeed` 值为 `1, 2, 3, 4, 5`。
 
 2) `stepIsDone()`
 

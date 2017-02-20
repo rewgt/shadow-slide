@@ -51,7 +51,7 @@
 
 两者之间如何对应，要求看一眼就能明白。比如上面样例的缺省 markdown 文本是：
 
-```
+``` md
 <pre $=MarkedDiv title='item A'>
 Page A
 </pre>
@@ -80,13 +80,12 @@ Page C
 合适的描述格式或许是：
 
 ```
-withPercent=true
-withData=false
+labels=Search,Directly,Email,Viedo
+title.text=Some description
+legend.display=true
+------
 
-Search  1548
-Directly  335
-Email  310
-Viedo  135
+1548 335 310 135
 ```
 
 4) 必要时分两层或多层定义组件，在各层提供不同配置

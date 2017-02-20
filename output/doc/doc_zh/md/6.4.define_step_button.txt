@@ -5,7 +5,7 @@
 
 在 Shadow Widget 的可视化设计器中，胶片页下的组件选中后，用 Config pre-post step 浮动按钮 ![pre-post](md/res/step_btn.png) 可召唤配置 step 单步的弹窗。该扩展工具项在 `"shadow-slide/TOOL.json"` 文件有定义，规格如下：
 
-```
+``` json
   {
     "name": "step",
     "icon": "/app/rewgt/shadow-slide/web/output/step.png",

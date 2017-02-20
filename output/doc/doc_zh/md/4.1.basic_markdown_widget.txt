@@ -13,7 +13,7 @@ Shadow Widget 内置提供 MarkedDiv 与 MarkedTable 两种最基础的 markdown
 
 Shadow Widget 以 Daring Fireball 规则集为基准，而且未在文本字面做扩展，仅借助一条 markdown 固有规则实现扩展，即：允许内置 html 标签。比如下面两种写法都是合法的 markdown 表达方式：
 
-```
+``` md
   [Shadow Slide](https://github.com/rewgt/shadow-slide)
 
   <a href="https://github.com/rewgt/shadow-slide">Shadow Slide</a>
@@ -29,7 +29,7 @@ Shadow Widget 以 Daring Fireball 规则集为基准，而且未在文本字面�
 
 试着把 MarkedDiv 的 markdown 改成如下文本，看看是什么结果：
 
-```
+``` md
 *Level 1*
 
 <pre $=MarkedDiv>*Level 2*</pre>
@@ -43,7 +43,7 @@ Shadow Widget 以 Daring Fireball 规则集为基准，而且未在文本字面�
 
 MarkedTable 用 markdown 文本描述一个表格，同样从 slide 资源页拖入 MarkedTable 样板来创建组件，按如下方式编辑它的 markdown 文本：
 
-```
+``` md
 row1-col1
 
 row1-col2
@@ -59,7 +59,7 @@ row2-col2
 
 如果想让多个自然段纳入同一单元格，不妨借助内嵌 MarkedDiv 构件，表格描述二维数据，MarkedDiv 描述一维数据，二维数据可由一维数据组合而来。例如：
 
-```
+``` md
 row1-col1
 
 <pre $=MarkedDiv>

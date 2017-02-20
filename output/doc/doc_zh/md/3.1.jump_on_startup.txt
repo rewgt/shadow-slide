@@ -27,7 +27,7 @@
 
 通过编程方式也能方便的跳转胶片的初始页，简要举例如下：
 
-```
+``` js
   main.$onReady.push( function() {
     var config = utils.pageCtrl.config || {};
     config.page = 0;     // or, config.page = 'idx_page';

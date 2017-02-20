@@ -11,7 +11,7 @@ Shadow Slide 是一款开源的免费软件，发行版已将它所依赖的 <a 
 先安装 Shadow Widget：
 
 ```
-  md user
+  mkdir user
   cd user
   git clone https://github.com/rewgt/shadow-server.git
 ```

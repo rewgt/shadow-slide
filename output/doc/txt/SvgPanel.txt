@@ -3,7 +3,7 @@ SvgPanel
 [ duals ]
   'html.': ''
   rotate: 0
-  cfg
+  svg.cfg
   strentch: '1'
   stroke: 3
   style.strokeColor: '#333'

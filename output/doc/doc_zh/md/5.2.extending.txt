@@ -13,7 +13,7 @@
 
 在胶片页的任意级别父节点，都能侦听 `slideenter` 事件，举例如下：
 
-```
+``` js
 document.body.addEventListener('slideenter', function(event) {
   console.log('slideenter:', event.pageKey, event.pageIndex);
   console.log('isFirstEnter =', utils.pageCtrl.isFirstEnter(event.target));

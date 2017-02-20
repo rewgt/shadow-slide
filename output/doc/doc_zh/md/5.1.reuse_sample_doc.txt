@@ -37,7 +37,7 @@ Shadow Slide 的胶片页样式可以定制，如果我们将宽高设为自适�
 
 在下拉框选择 `Slide, Blog, Slideshow` 的实际意义是，改变 `utils.pageCtrl.config` 缺省值，比如选择 Slide，相当于文档在启动时，系统自动给 `utils.pageCtrl.config` 赋值：
 
-```
+``` js
   utils.pageCtrl.config = {
     size: '900x700',
     autoplay: 0,

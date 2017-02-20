@@ -8,6 +8,7 @@
 > - [`rewgt.SvgPanel`](#6.3.!svg_panel)
 > - [`rewgt.GotoPage`](#6.3.!goto_page)
 > - [`rewgt.DelayTimer`](#6.3.!delay_timer)
+> - [`rewgt.PlayShell`](#6.3.!play_shell)
 
 > 控制实体
 > - [`utils.pageCtrl`](#6.3.!page_ctrl)
@@ -44,7 +45,7 @@
 在 SVG 绘图单元上显示的文本，用 markdown 格式描述。
 > - `rotate: 0`   
 背景 SVG 图片的旋转角度，取值应为 `0 ~ 360` 之间的数值，图片将以中心点为基准，顺时针旋转指定角度。
-> - `cfg`   
+> - `svg.cfg`   
 定义绘图数据，格式为 `[iStyle, bExtraCfg, imageData, ...]`。其中 `imageData` 表达一个 SVG 图片，`imageData` 可以有 1 个，2 个，或者 3 个。   
 `iStyle` 指示绘图类型，值为 `-2` 表示绘制曲线，`-1` 表示绘制直线，`0` 表示绘制单图，`1` 表示从左向右绘制双图或三图，`2` 表示从上向下绘制双图或三图。如果绘制双图，`1` 与 `2` 均为尾图固定尺寸、首图拉抻，若绘制三图则中间固定、首尾拉抻。`iStyle` 为 `9` 表示从左向右绘制双图或三图，同 `1`，但固定与拉抻位置互换，`iStyle` 为 `10` 表示从上向下绘制双图或三图，同 `2`，但固定与拉抻位置互换。   
 `bExtraCfg` 格式为 `[sStrokeLineFormat,0, iPreType,iPostType, x,y, ...]`，其中 `sStrokeLineFormat` 指示线型，`iPreType` 与 `iPostType` 分别定义起止箭头的形态，`x,y` 定义点座标，可以定义多个座标点，在绘制直线或曲线时使用。   
@@ -85,6 +86,20 @@ SVG 绘图的填充颜色。
 取值为 `'1'` 或 空字串，其值为真表示首次演示到当前页时就自动启动延时，否则不自动启动。
 > - `data-delay: '0'`   
 指定延时多少秒，如 `'3.5'` 表示延时 `3.5` 秒，如果取 `'0'` 值，尝试从单步 step 配置读取，配置为 `fastest, faster, normal, slower, slowest` 分别对应 `1, 2, 3, 4, 5` 秒。
+
+##### <a name="play_shell"></a>`rewgt.PlayShell`
+
+> 本类继承自 `P`（请参考 Shadow Widget API 手册），为可播放构件（如 Audio、Video）提供通用的单步控制外壳。
+
+> PlayShell 提供 `stepPause(), stepIsDone(), playOnEnter()` 操作接口，这些函数被调用时，将自动转接到它下层 key 为 `'player'` 可播放构件的同名函数。
+
+&nbsp;
+
+> **`getDefaultProps()` 新增属性：** 无。
+
+> **新增 duals 属性：**
+> - `data-auto: ''`   
+取值为 `'1'` 或 空字串，其值为真表示首次演示到当前页时就自动播放，否则不自动启动。
 
 ##### <a name="page_ctrl"></a>`utils.pageCtrl`
 

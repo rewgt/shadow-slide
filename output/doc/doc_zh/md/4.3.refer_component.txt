@@ -23,13 +23,13 @@ Markdown 编辑器（如上图）提供若干便利的功能：
 
 在 MarkedDiv 或 MarkedTable 组件的 markdown 文本中，允许使用的转义标签有两类，一类是新建构件，比如：
 
-```
+``` md
 <div $=Panel width='{200}' height='{100}' style='{{"background":"#ccc"}}'></div>
 ```
 
 另一类是引用在本构件外已存在的组件，比如：
 
-```
+``` md
 <div $=".body.2.0"></div>
 ```
 

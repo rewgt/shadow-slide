@@ -13,21 +13,21 @@ Shadow Slide 是一款开源的免费软件，发行版已将它所依赖的 <a 
 
 先安装 Shadow Widget：
 
-```
-  md user
+``` bash
+  mkdir user
   cd user
   git clone https://github.com/rewgt/shadow-server.git
 ```
 
 然后安装 Shadow Slide：
 
-```
+``` bash
   git clone https://github.com/rewgt/shadow-slide.git
 ```
 
 #### 在本机启动 Web 服务
 
-```
+``` bash
   cd shadow-server
   npm start
 ```

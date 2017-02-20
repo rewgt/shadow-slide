@@ -625,6 +625,7 @@ class TSvgPanel_ extends T.Panel_ {
   
   getInitialState() {
     var state = super.getInitialState();
+    state.style.backgroundRepeat = 'no-repeat'; // default no repeat
     
     var self = this, waitingDraw = false;
     this.defineDual('html.', function(value,oldValue) {
@@ -697,6 +698,61 @@ class TSvgPanel_ extends T.Panel_ {
 T.rewgt.SvgPanel_ = TSvgPanel_;
 T.rewgt.SvgPanel  = new TSvgPanel_();
 
+class TPlayShell_ extends T.P_ {
+  constructor(name,desc) {
+    super(name || 'rewgt.PlayShell',desc);
+    // this._docUrl = 'doc';  // default is 'doc'
+    this._defaultProp['step.play'] = true;
+    this._htmlText = false;
+  }
+  
+  _getSchema(self,iLevel) {
+    iLevel = iLevel || 1200;
+    var schema = super._getSchema(self,iLevel+200);
+    schema['data-auto'] = [iLevel+1,'string',['','1'],'[string]: auto play when page enter, "" or "1"'];
+    return schema;
+  }
+  
+  getDefaultProps() {
+    var props = super.getDefaultProps();
+    props['step.play'] = true;
+    props['data-auto']  = '';
+    return props;
+  }
+  
+  stepPlay(fSpeed) {
+    if (W.__design__) return;
+    var child = this.componentOf('player');
+    if (child && typeof child.stepPlay == 'function')
+      child.stepPlay(fSpeed);
+  }
+  
+  stepPause(sReason) {
+    if (W.__design__) return;
+    var child = this.componentOf('player');
+    if (child && typeof child.stepPause == 'function')
+      child.stepPause(sReason);
+  }
+  
+  stepIsDone() {
+    if (!W.__design__) {
+      var child = this.componentOf('player');
+      if (child && typeof child.stepIsDone == 'function')
+        return child.stepIsDone();
+    }
+    return true;
+  }
+  
+  playOnEnter() {
+    var s = this.state['data-auto'];
+    if (s == 'true') return true;
+    return !!parseInt(s);
+  }
+}
+
+T.rewgt.PlayShell_ = TPlayShell_;
+T.rewgt.PlayShell  = new TPlayShell_();
+
 class TGotoPage_ extends T.Div_ {
   constructor(name,desc) {
     super(name || 'rewgt.GotoPage',desc);
@@ -723,7 +779,7 @@ class TGotoPage_ extends T.Div_ {
     return props;
   }
   
-  stepPlay(iSpeed) {  // ignore iSpeed
+  stepPlay(fSpeed) {  // ignore fSpeed
     if (W.__design__) return;
     
     var self = this;
@@ -800,7 +856,7 @@ class TDelayTimer_ extends T.P_ {
     iLevel = iLevel || 1200;
     var schema = super._getSchema(self,iLevel+200);
     schema['data-delay'] = [iLevel+1,'string',null,'[string]: 0 or N seconds'];
-    schema['data-auto'] = [iLevel+2,'string',null,'[string]: auto delay when page enter, "" or "1"'];
+    schema['data-auto'] = [iLevel+2,'string',['','1'],'[string]: auto delay when page enter, "" or "1"'];
     return schema;
   }
   
@@ -819,12 +875,12 @@ class TDelayTimer_ extends T.P_ {
     return state;
   }
   
-  stepPlay(iSpeed) {
+  stepPlay(fSpeed) {
     if (W.__design__) return;
     
     var iSecond = parseInt(this.state['data-delay']) || 0;
     if (iSecond === 0)
-      iSecond = iSpeed || 0;
+      iSecond = fSpeed || 0;
     if (isNaN(iSecond)) return;  // ignore
     
     this.canAct = true;
@@ -978,9 +1034,9 @@ function setupFrames_(pageCtrl,iCurr,withStepNext) {
   var topY = SCREEN_CENTER_Y - SLIDE_HALF_HEIGHT;
   var lastPgIndex = pageCtrl.pageIndex;
   
-  var isFirstTime = false;
+  var isFirstShow = false;
   if (slideState == 0) {
-    isFirstTime = true;
+    isFirstShow = true;
     lastPgIndex = -1;
     
     slideState = 1;
@@ -1057,7 +1113,7 @@ function setupFrames_(pageCtrl,iCurr,withStepNext) {
     }
   }
   
-  if (isFirstTime) {
+  if (isFirstShow) {
     setTimeout( function() {
       dispatchEnter();
     },0);  // wait for prepare pre-post finished
@@ -1124,7 +1180,7 @@ function setupFrames_(pageCtrl,iCurr,withStepNext) {
       if (!prevented) {
         var iNum = (slideHiter[currKey] || 0) + 1;
         slideHiter[currKey] = iNum;
-        if (isFirstTime) {
+        if (isFirstShow) {
           setTimeout( function() {
             pageCtrl.enterPage(evt,currComp,iNum == 1);
           },1000);  // waiting for prebuild-N ready
@@ -1462,15 +1518,19 @@ main.$onLoad.push( function() { // all functions in $onLoad not run when W.__des
       
       var node;
       if (isFirstEnter && (node=comp.getHtmlNode())) {
-        var bList = [], hasJoin = false;
-        var blocks = node.querySelectorAll('div.rewgt-center > [class*="prebuild-"]');
-        for (var i=0,block; block=blocks[i]; i++) {
+        var hasJoin = false;
+        var block = node.querySelector('div.rewgt-center > [class*="prebuild-"]');
+        if (block) {
           var s = block.getAttribute('data-prepost') || '', b = s.split('-');
-          if (i == 0 && parseInt(b[4]))
-            hasJoin = true;
-          if (b[0] === '18' || b[0] === '19' || b[2] === '18' || b[2] === '19') {
+          if (b.length >= 5 && parseInt(b[4]))
+            hasJoin = true;  // first pre-post step is joined
+        }
+        
+        var bList = [], blocks = node.querySelectorAll('div.rewgt-center > *');
+        for (var i=0,block; block=blocks[i]; i++) {
+          if (block.classList.contains('rewgt-panel') || block.classList.contains('rewgt-unit')) {
             var sKey = utils.keyOfNode(block);
-            if (sKey) bList.push(sKey);
+            if (sKey) bList.push(sKey); // no need check 'data-prepost'
           }
         }
         
@@ -1479,7 +1539,7 @@ main.$onLoad.push( function() { // all functions in $onLoad not run when W.__des
           setTimeout( function() {
             bList.forEach( function(sKey) {
               var child = wdgt[sKey], childComp = child && child.component;
-              if (childComp && typeof childComp.playOnEnter == 'function') {
+              if (childComp && childComp.props['step.play'] && typeof childComp.playOnEnter == 'function') {
                 if (childComp.playOnEnter() && typeof childComp.stepPlay == 'function')
                   childComp.stepPlay(0); // 0 means not specify speed
               }
