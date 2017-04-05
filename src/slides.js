@@ -1,9 +1,8 @@
 // slides.js
 
-var React = require('react');        // var React = window.React;
-var ReactDOM = require('react-dom'); // var ReactDOM = window.ReactDOM;
-var W = require('shadow-widget');    // var W = window.W;
-                                     // if (!React || !ReactDOM || !W) console.log('fatal error: invalid cdn version of react or shadow-widget.');
+var React = require('react');
+var ReactDOM = require('react-dom');
+var W = require('shadow-widget');
 
 var T = W.$templates, creator = W.$creator;
 var utils = W.$utils, ex = W.$ex, main = W.$main;
@@ -59,14 +58,17 @@ class TDrawPaper_ extends T.Panel_ {
   constructor(name,desc) {
     super(name || 'rewgt.DrawPaper',desc);
     // this._docUrl = 'doc';  // default is 'doc'
-    this._statedProp.push('defId');
+    this._statedProp.push('defId','offsetX','offsetY');
     this._defaultProp.offsetX = 0;
     this._defaultProp.offsetY = 0;
     this._silentProp.push('drawPaper.');
   }
   
   _getGroupOpt(self) {
-    return getDefaultOpt_(self);
+    var d = getDefaultOpt_(self), tools = self._._tools;
+    d.editable = self.props['data-inline']? 'all': 'none';
+    if (tools) d.tools = tools;
+    return d;
   }
   
   _getSchema(self,iLevel) {
@@ -627,9 +629,16 @@ class TSvgPanel_ extends T.Panel_ {
     var state = super.getInitialState();
     state.style.backgroundRepeat = 'no-repeat'; // default no repeat
     
+    if (this.$gui.hasIdSetter && !W.__design__) {
+      if (underDesign(this.widget)) {
+        this.undefineDual('id__');     // ignore $id__ for designing
+        this.$gui.hasIdSetter = false;
+      }
+    }
+    
     var self = this, waitingDraw = false;
     this.defineDual('html.', function(value,oldValue) {
-      if (!W.__design__) return;
+      if (!W.__design__ && !underDesign(this.widget)) return;
       
       var newValue = this.state['html.'] = value || '';
       if (!newValue) return;       // if no content, just ignore
@@ -691,6 +700,13 @@ class TSvgPanel_ extends T.Panel_ {
             redrawSvg_(self); // will render in next tick
         }
       },0);
+    }
+    
+    function underDesign(wdgt) {
+      var ownerComp, owner = wdgt && wdgt.parent;
+      if (owner && (ownerComp=owner.component) && ownerComp.props['data-design'] && ownerComp.props['drawPaper.'])
+        return true;
+      else return false;
     }
   }
 }

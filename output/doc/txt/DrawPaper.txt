@@ -1,5 +1,7 @@
 DrawPaper
 6.3.!draw_paper
+[ props ]
+  data-inline: ''
 [ duals ]
   offsetX: 0
   offsetY: 0

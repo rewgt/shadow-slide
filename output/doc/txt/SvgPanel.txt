@@ -1,7 +1,6 @@
 SvgPanel
 6.3.!svg_panel
 [ duals ]
-  'html.': ''
   rotate: 0
   svg.cfg
   strentch: '1'
