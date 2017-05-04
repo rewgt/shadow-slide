@@ -131,15 +131,18 @@ var re_fill_   = /\bfill=['"].*?["']/m;
 var re_width_  = /\bstroke-width=['"].*?["']/m;
 var re_dash_   = /\bstroke-dasharray=['"].*?["']/m;
 
-function setupSvgDataUrl_(sHtml,sStrokeColor,sBackColor,iStrokeWd,sStrokeDash) {
+function setupSvgDataUrl_(sHtml,sStrokeColor,sBackColor,iStrokeWd,sStrokeDash,scaleX,scaleY) {
   re_g_node_.lastIndex = 0;
   var m = re_g_node_.exec(sHtml), sNew = '', index = 0;
   while (m) {
     var s = m[0];
     sNew += sHtml.slice(index,m.index);
     
-    s = s.replace(re_widget_,'')
-         .replace(re_stroke_,"stroke='" + sStrokeColor + "'")
+    if (scaleX && scaleY)
+      s = s.replace(re_widget_,' transform="scale(' + scaleX + ' ' + scaleY + ')"');
+    else s = s.replace(re_widget_,'');
+    
+    s = s.replace(re_stroke_,"stroke='" + sStrokeColor + "'")
          .replace(re_fill_,"fill='" + sBackColor + "'")
          .replace(re_width_,"stroke-width='" + iStrokeWd + "'")
          .replace(re_dash_,"stroke-dasharray='" + sStrokeDash + "'");
@@ -266,11 +269,19 @@ function redrawSvg_(self) {
     if (imgNum == 1 && iStyle >= 0) {
       var _svg=imgs[0], sHtml=_svg.svg, iWd=_svg.width, iHi=_svg.height;
       
-      var sRect = _svg.scalable? (iWholeWd + '" height="' + iWholeHi): (iWd + '" height="' + iHi);
-      sRect = 'width="' + sRect + '" viewPort="0 0 ' + iWd + ' ' + iHi + '" ';
+      var scaleX,scaleY;
+      if (!_svg.scalable) {
+        scaleX = iWholeWd / iWd;  // iWd must not 0
+        scaleY = iWholeHi / iHi;  // iHi must not 0
+      }
+      else {
+        scaleX = 0;
+        scaleY = 0;
+      }
+      var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + iWd + ' ' + iHi + '" ';
       sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + sHtml + '</svg>';
-      
-      sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash);
+
+      sHtml = setupSvgDataUrl_(sHtml,sStrokeColor,sFillColor,iStrokeWd,sStrokeDash,scaleX,scaleY);
       sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
       self.duals.style = {backgroundImage:sHtml};
       return;
@@ -568,7 +579,7 @@ class TSvgPanel_ extends T.Panel_ {
   
   getInitialState() {
     var state = super.getInitialState();
-    state.style.backgroundRepeat = 'no-repeat'; // default no repeat
+    // state.style.backgroundRepeat = 'no-repeat'; // has move to css
     
     var inDsn = false;
     if (W.__design__)
