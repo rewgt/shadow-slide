@@ -1,0 +1,72 @@
+6.5 创建全新工程
+------------
+
+&nbsp;
+
+[新建演示胶片](#1.1.) 一节介绍了通过拷贝 shadow-slide 目录，然后更改目录名的创建新工程方法，这里我们补充介绍如何从空白目录开始，通过手工安装依赖项来创建新工程。
+
+#### 新工程的依赖项
+
+新工程生产环境的依赖项：
+
+```
+  +-----------------+
+  |  shadow-slide   |
+  +-----------------+
+  +-----------------+
+  |  shadow-widget  |
+  +-----------------+
+  +-----------------+
+  |      React      |
+  +-----------------+
+```
+
+用于开发环境，新工程还得安装：`babel-preset-es2015, babel-preset-react, babelify, watchify`。
+
+不过如何安装依赖库，还与您如何选择开发方式有关。
+
+#### 开发方式
+
+在 shadow-slide 基础上开发 APP，主要有两种开发方式，其一，所有库采用 cdn 版本，APP 开发用 ES5 规格写 JS 代码，避免用 babel 翻译 ES6 代码；其二，适应常规的 React 开发方式，用 ES6 做开发，搭建具备 babel、browserify、watchify 的集成化开发环境。
+
+对于前者，我们只需将 React、shadow-widget、shadow-slide 的 CDN 版本，在 html 文件中导入进来，然后在 main 模块用 ES5 做开发即可，详见《Shadow Widget 用户手册》中相关介绍。对于后者，搭建工程环境的步骤在下面介绍。
+
+#### 从空白目录开始搭建 React 开发环境
+
+步骤 1：新建一个空目录，比方叫 `MySlide`，这也是我们的新建工程名。
+
+``` bash
+  mkdir MySlide
+  cd MySlide
+```
+
+步骤 2：创建 package.json，这个文件以后还可再改，npm init 交互提示您输入项目信息，为简单起见，先用缺省值，一路回车。
+
+``` bash
+  npm init
+```
+
+步骤 3：添加依赖库
+
+``` bash
+  npm install --save-dev babel-preset-es2015 babel-preset-react babelify
+  npm install --save-dev watchify
+  npm install --save react
+  npm install --save react-dom
+  npm install --save shadow-widget
+  npm install --save shadow-slide
+```
+
+步骤 4：编写入口文件 index.js，参见《Shadow Widget 用户手册》中 "3.1.1 创建空白工程" 一节。
+
+步骤 5：在 package.json 中定义 start 命令用于启动 watchify，合入如下代码：
+
+``` js
+  "scripts": {
+    "start": "watchify index.js -v -o bundle.js -t [ babelify --presets [ es2015 react ] ]"
+  },
+```
+
+上述过程也是创建  Shadow Widget 工程的标准过程，差别仅在于，用 `npm install --save shadow-slide` 多安装一个依赖库，《Shadow Widget 用户手册》的 "3.1.1 创建空白工程" 已详细介绍各步操作。
+
+&nbsp;

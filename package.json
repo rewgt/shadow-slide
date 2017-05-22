@@ -1,6 +1,6 @@
 {
   "name": "shadow-slide",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A PPT-like document creator that powered by shadow-widget",
   "main": "index.js",
   "scripts": {

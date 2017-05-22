@@ -3,11 +3,11 @@
 
 &nbsp;
 
-可播放组件为 step 单步额外提供 play、pause 等操作选项，一个组件是否可播放，由它的 `props['step.play']` 取值是否为真来决定。Shadow Slide 提供的翻页器 `rewgt.GotoPage` 与定时器 `rewgt.DelayTimer` 都是可 play 组件。
+可播放组件（`T.rewgt.PlayShell`）为 step 单步额外提供 play、pause 等操作选项。Shadow Slide 提供的翻页器 `rewgt.GotoPage` 与定时器 `rewgt.DelayTimer` 都是可播放组件。
 
 &nbsp;
 
-一个可播放组件，应定义如下几个 API：
+#### 可播放组件的 API
 
 1) `stepPlay(fSpeed)`
 
@@ -30,5 +30,11 @@
 > 用于检测当前页在首次进入时，是否就自动开启播放，若是返回 `true`，否则返回 `false`。
 
 > 定时器 `rewgt.DelayTimer` 的 `playOnEnter()` 返回值由 `data-auto` 属性取值决定，如果 `data-auto` 为 `'1'`，返回 `true`，若为空字串则返回 `false`。
+
+#### 如何将播放器嵌入可播放组件
+
+可播放组件（`T.rewgt.PlayShell`）用 `props['step.play'] = true` 标识它具有可播放 API（即上面列出的 API）。为适配 step 单步操作，它在播放器构件之外包了一个薄薄的适配层。播放器是它的子构件，key 名固定为 `"player"`。当可播放组件的 `stepPlay, stepIsDone, stepPause, playOnEnter` 等方法被调用，将自动转接到 `player` 子构件的相应 API 。
+
+了解更多细节，请阅读 `slides.js` 源文件中 `T.rewgt.PlayShell` 相关定义。
 
 &nbsp;
