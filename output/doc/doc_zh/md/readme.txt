@@ -29,6 +29,7 @@ Shadow Slide 是一款开源的免费软件，发行版已将它所依赖的 <a 
 
 ``` bash
   cd shadow-server
+  npm install
   npm start
 ```
 
