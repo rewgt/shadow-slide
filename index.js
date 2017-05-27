@@ -27,6 +27,8 @@ var utils = W.$utils,
 var TRANS_END_FUNC = '';
 var TRANS_CSS_NAME = '';
 
+var LINE_TENSION = 0.4;
+
 (function () {
   var vendor = utils.vendorId || [],
       sVendor = vendor[0] || '';
@@ -156,7 +158,7 @@ var re_fill_ = /\bfill=['"].*?["']/m;
 var re_width_ = /\bstroke-width=['"].*?["']/m;
 var re_dash_ = /\bstroke-dasharray=['"].*?["']/m;
 
-function setupSvgDataUrl_(sHtml, sStrokeColor, sBackColor, iStrokeWd, sStrokeDash) {
+function setupSvgDataUrl_(sHtml, sStrokeColor, sBackColor, iStrokeWd, sStrokeDash, scaleX, scaleY) {
   re_g_node_.lastIndex = 0;
   var m = re_g_node_.exec(sHtml),
       sNew = '',
@@ -165,7 +167,9 @@ function setupSvgDataUrl_(sHtml, sStrokeColor, sBackColor, iStrokeWd, sStrokeDas
     var s = m[0];
     sNew += sHtml.slice(index, m.index);
 
-    s = s.replace(re_widget_, '').replace(re_stroke_, "stroke='" + sStrokeColor + "'").replace(re_fill_, "fill='" + sBackColor + "'").replace(re_width_, "stroke-width='" + iStrokeWd + "'").replace(re_dash_, "stroke-dasharray='" + sStrokeDash + "'");
+    if (scaleX && scaleY) s = s.replace(re_widget_, ' transform="scale(' + scaleX + ' ' + scaleY + ')"');else s = s.replace(re_widget_, '');
+
+    s = s.replace(re_stroke_, "stroke='" + sStrokeColor + "'").replace(re_fill_, "fill='" + sBackColor + "'").replace(re_width_, "stroke-width='" + iStrokeWd + "'").replace(re_dash_, "stroke-dasharray='" + sStrokeDash + "'");
     sNew += s;
 
     index = re_g_node_.lastIndex;
@@ -175,88 +179,24 @@ function setupSvgDataUrl_(sHtml, sStrokeColor, sBackColor, iStrokeWd, sStrokeDas
   return sNew; // 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sNew) + '")'
 }
 
-function getCtrlPoint_(x1, y1, x2, y2, x3, y3, x4, y4) {
-  var k1 = 0.35,
-      k2 = 0.333;
-  if (x1 === undefined) {
-    if (x4 === undefined) // only two points: p2,p3
-      return [x2, y2, x3, y3];
-    // else, has p2,p3,p4
+function splineCurve_(x1, y1, x2, y2, x3, y3, t) {
+  var d01 = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  var d12 = Math.sqrt(Math.pow(x3 - x2, 2) + Math.pow(y3 - y2, 2));
+  var s01 = d01 / (d01 + d12);
+  var s12 = d12 / (d01 + d12);
 
-    var d23 = getAngleLen(x2, y2, x3, y3),
-        L23 = d23[0];
-    var d34 = getAngleLen(x3, y3, x4, y4),
-        L34 = d34[0];
-    var a = Math.abs(d34[1] - d23[1]);
-    if (a > 180) a = 360 - a;
-    if (a >= 90) {
-      k1 = 0.38;
-      k2 = 0.333 - 0.266 * (a - 90) / 180;
-    } else k2 = 0.2 + 0.266 * a / 180;
+  // If all points are the same, s01 & s02 will be inf
+  s01 = isNaN(s01) ? 0 : s01;
+  s12 = isNaN(s12) ? 0 : s12;
 
-    var rateB = L23 * k1 / L34;
-    var b1X = x3 - rateB * (x4 - x3);
-    var b1Y = y3 - rateB * (y4 - y3);
-    var b2X = b1X - (b1X - x2) * k2;
-    var b2Y = b1Y - (b1Y - y2) * k2;
+  var fa = t * s01; // scaling factor for triangle Ta
+  var fb = t * s12;
 
-    var a2X = x2 + (b1X - x2) * k2;
-    var a2Y = y2 + (b1Y - y2) * k2;
-    return [a2X, a2Y, b2X, b2Y];
-  } else {
-    var d12 = getAngleLen(x1, y1, x2, y2),
-        L12 = d12[0];
-    var d23 = getAngleLen(x2, y2, x3, y3),
-        L23 = d23[0];
-    var a = Math.abs(d23[1] - d12[1]);
-    if (a > 180) a = 360 - a;
-    if (a >= 90) {
-      k1 = 0.38;
-      k2 = 0.333 - 0.266 * (a - 90) / 180;
-    } else k2 = 0.2 + 0.266 * a / 180;
-
-    var rateA = L23 * k1 / L12;
-    var a1X = x2 + rateA * (x2 - x1);
-    var a1Y = y2 + rateA * (y2 - y1);
-    var a2X = a1X + (x3 - a1X) * k2;
-    var a2Y = a1Y + (y3 - a1Y) * k2;
-
-    var b2X, b2Y;
-    if (x4 === undefined) {
-      // p1,p2,p3
-      b2X = x3 - (x3 - a1X) * k2;
-      b2Y = y3 - (y3 - a1Y) * k2;
-    } else {
-      // p1,p2,p3,p4
-      var d34 = getAngleLen(x3, y3, x4, y4),
-          L34 = d34[0];
-      var a = Math.abs(d34[1] - d23[1]);
-      if (a > 180) a = 360 - a;
-      if (a >= 90) {
-        k1 = 0.38;
-        k2 = 0.333 - 0.266 * (a - 90) / 180;
-      } else k2 = 0.2 + 0.266 * a / 180;
-
-      var rateB = L23 * k1 / L34;
-      var b1X = x3 - rateB * (x4 - x3);
-      var b1Y = y3 - rateB * (y4 - y3);
-      b2X = b1X - (b1X - x2) * k2;
-      b2Y = b1Y - (b1Y - y2) * k2;
-    }
-    return [a2X, a2Y, b2X, b2Y];
-  }
-
-  function getAngleLen(x1, y1, x2, y2) {
-    var detaX = x2 - x1,
-        detaY = y2 - y1;
-    var x = Math.abs(detaX);
-    var y = Math.abs(detaY);
-    var z = Math.sqrt(x * x + y * y);
-    var radina = Math.acos(y / z); // cos = y/z
-    var ang = 180 / (Math.PI / radina);
-
-    if (detaX > 0) return [z, detaY > 0 ? 90 - ang : 270 + ang];else return [z, detaY > 0 ? 90 + ang : 270 - ang];
-  }
+  return [x2 - fa * (x3 - x1), // previousX
+  y2 - fa * (y3 - y1), // previousY
+  x2 + fb * (x3 - x1), // nextX
+  y2 + fb * (y3 - y1) // nextY
+  ];
 }
 
 var svgCache_ = {};
@@ -354,11 +294,18 @@ function redrawSvg_(self) {
           iWd = _svg.width,
           iHi = _svg.height;
 
-      var sRect = _svg.scalable ? iWholeWd + '" height="' + iWholeHi : iWd + '" height="' + iHi;
-      sRect = 'width="' + sRect + '" viewPort="0 0 ' + iWd + ' ' + iHi + '" ';
+      var scaleX, scaleY;
+      if (!_svg.scalable) {
+        scaleX = iWholeWd / iWd; // iWd must not 0
+        scaleY = iWholeHi / iHi; // iHi must not 0
+      } else {
+        scaleX = 0;
+        scaleY = 0;
+      }
+      var sRect = 'width="' + iWholeWd + '" height="' + iWholeHi + '" viewPort="0 0 ' + iWd + ' ' + iHi + '" ';
       sHtml = '<svg ' + sRect + 'version="1.1" xmlns="http://www.w3.org/2000/svg">' + sHtml + '</svg>';
 
-      sHtml = setupSvgDataUrl_(sHtml, sStrokeColor, sFillColor, iStrokeWd, sStrokeDash);
+      sHtml = setupSvgDataUrl_(sHtml, sStrokeColor, sFillColor, iStrokeWd, sStrokeDash, scaleX, scaleY);
       sHtml = 'url("data:image/svg+xml;base64,' + utils.Base64.encode(sHtml) + '")';
       self.duals.style = { backgroundImage: sHtml };
       return;
@@ -454,24 +401,20 @@ function redrawSvg_(self) {
           bNew.unshift(undefined, undefined);
           iNewLen += 2;
 
-          sPath = 'M' + bNew[2] + ' ' + bNew[3];
+          var iLastX = bNew[2],
+              iLastY = bNew[3];
+          sPath = 'M' + iLastX + ' ' + iLastY;
           for (var i = 3; i < iNewLen; i += 2) {
-            var x1 = bNew[i - 3],
-                y1 = bNew[i - 2],
-                x2 = bNew[i - 1],
+            var x1 = i <= 3 ? bNew[i - 1] : bNew[i - 3];
+            var y1 = i <= 3 ? bNew[i] : bNew[i - 2];
+            var x2 = bNew[i - 1],
                 y2 = bNew[i];
-            if (i <= iNewLen - 3) {
-              var x3 = bNew[i + 1],
-                  y3 = bNew[i + 2],
-                  x4 = undefined,
-                  y4 = undefined;
-              if (i <= iNewLen - 5) {
-                x4 = bNew[i + 3];
-                y4 = bNew[i + 4];
-              }
-              var ctrls = getCtrlPoint_(x1, y1, x2, y2, x3, y3, x4, y4);
-              sPath += 'C' + ctrls[0] + ' ' + ctrls[1] + ' ' + ctrls[2] + ' ' + ctrls[3] + ' ' + x3 + ' ' + y3;
-            } else break;
+            var x3 = i >= iNewLen - 1 ? x2 : bNew[i + 1];
+            var y3 = i >= iNewLen - 1 ? y2 : bNew[i + 2];
+
+            var ctrls = splineCurve_(x1, y1, x2, y2, x3, y3, LINE_TENSION);
+            sPath += 'C' + iLastX + ' ' + iLastY + ' ' + ctrls[0] + ' ' + ctrls[1] + ' ' + x2 + ' ' + y2;
+            iLastX = ctrls[2];iLastY = ctrls[3];
           }
         }
       }
@@ -650,6 +593,7 @@ var TSvgPanel_ = function (_T$Panel_2) {
 
     _this2._htmlText = true;
 
+    _this2._statedProp.push('svg.cfg', 'stroke', 'strentch', 'rotate');
     _this2._defaultProp.stroke = 3;
     _this2._defaultProp.width = 100;
     _this2._defaultProp.height = 40;
@@ -699,19 +643,20 @@ var TSvgPanel_ = function (_T$Panel_2) {
     key: 'getInitialState',
     value: function getInitialState() {
       var state = _get(TSvgPanel_.prototype.__proto__ || Object.getPrototypeOf(TSvgPanel_.prototype), 'getInitialState', this).call(this);
-      state.style.backgroundRepeat = 'no-repeat'; // default no repeat
+      // state.style.backgroundRepeat = 'no-repeat'; // has move to css
 
-      if (this.$gui.hasIdSetter && !W.__design__) {
-        if (underDesign(this.widget)) {
-          this.undefineDual('id__'); // ignore $id__ for designing
-          this.$gui.hasIdSetter = false;
-        }
+      var inDsn = false;
+      if (W.__design__) inDsn = true;else if (underDesign(this.widget)) inDsn = true;
+      if (inDsn && this.$gui.hasIdSetter) {
+        this.undefineDual('id__'); // ignore $id__ for designing
+        this.$gui.hasIdSetter = false;
       }
+      if (inDsn) this.props.style = Object.assign({}, this.props.style); // force copy
 
       var self = this,
           waitingDraw = false;
       this.defineDual('html.', function (value, oldValue) {
-        if (!W.__design__ && !underDesign(this.widget)) return;
+        if (!inDsn) return;
 
         var newValue = this.state['html.'] = value || '';
         if (!newValue) return; // if no content, just ignore
@@ -750,7 +695,16 @@ var TSvgPanel_ = function (_T$Panel_2) {
         redraw();
       }); // default duals.stroke is undefined, try redraw if ready
       this.defineDual('style', function (value, oldValue) {
-        if (value.strokeColor || value.fillColor) redraw();
+        var needDraw = false;
+        if (value.strokeColor) {
+          if (inDsn) this.props.style.strokeColor = value.strokeColor; // help dumpping
+          needDraw = true;
+        }
+        if (value.fillColor) {
+          if (inDsn) this.props.style.fillColor = value.fillColor; // help dumpping
+          needDraw = true;
+        }
+        if (needDraw) redraw();
       });
       this.defineDual('rotate', function (value, oldValue) {
         var iValue = this.state.rotate = parseInt(value) || 0;
@@ -1422,6 +1376,8 @@ main.$onLoad.push(function () {
           setTimeout(function () {
             leftCtrl.style.opacity = '0';
             rightCtrl.style.opacity = '0';
+
+            if (!config.noKeypress) window.focus(); // let keypress acting
           }, 500);
         }, 300);
       }, 1000); // hint control bar
