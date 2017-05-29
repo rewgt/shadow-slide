@@ -190,7 +190,7 @@ function getAllSvgData_(bReading, nextStep) {
     getSvg(sUrl, function(data) {
       item[1] = data;
       if (!data) {
-        console.log('warning: read JSON failed (' + sUrl + ')');
+        console.log('warning: read failed (' + sUrl + ')');
         iErr += 1;
       }
       else iSucc += 1;
@@ -205,15 +205,28 @@ function getAllSvgData_(bReading, nextStep) {
       return;
     }
     
-    utils.ajax({ type:'GET', url:sUrl, dataType:'json',
-      success: function(data,statusText,xhr) {
-        svgCache_[sUrl] = data;
+    var b = sUrl.split('?'), b2 = b[0].split('/'), fileId = b2.pop(), b3 = fileId.split('.');
+    if (b3[b3.length-1] === 'json') b3.pop();
+    if (b3[b3.length-1] === 'svg') b3.pop();
+    fileId = b3.join('.'); // remove tail '.svg.json'
+    
+    var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
+    var script = document.createElement('script');
+    script.async = 'async';
+    script.src = sUrl;
+    script.onload = script.onreadystatechange = function() {
+      if (!script.readyState || /loaded|complete/.test(script.readyState)) {
+        script.onload = script.onreadystatechange = null; // handle memory leak in IE
+        if (head && script.parentNode) // remove the script node
+          head.removeChild(script);
+        script = undefined;   // dereference the script
+        
+        var data = W.$svg[fileId] || null;
+        if (data) svgCache_[sUrl] = data;
         callback(data);
-      },
-      error: function(xhr,statusText) {
-        callback(null);
-      },
-    });
+      }
+    };
+    head.insertBefore(script,head.firstChild);
   }
 }
 
@@ -1743,13 +1756,13 @@ main.$onLoad.push( function() { // all functions in $onLoad not run when W.__des
       var block = blocks[0];
       if (block) {
         var nextBlock = null, sPrepost = block.getAttribute('data-prepost') || '';
-        if (sPrepost.startsWith('0-')) { // only post-step
+        if (sPrepost.indexOf('0-') == 0) { // only post-step
           var bList = [block];
           block = null;
           
           for (var i2=1,block2; block2 = blocks[i2]; i2++) {
             var sPrepost2 = block2.getAttribute('data-prepost') || '';
-            if (sPrepost2.startsWith('0-'))
+            if (sPrepost2.indexOf('0-') == 0)
               bList.push(block2);
             else {
               block = block2;
