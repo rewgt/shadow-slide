@@ -270,13 +270,13 @@ function redrawSvg_(self) {
       iWholeWd = 200;
     else if (iWholeWd < 1) {
       var parentWd = self.state.parentWidth;
-      iWholeWd = isNaN(parentWd)? 200: iWholeWd * parentWd;
+      iWholeWd = isNaN(parentWd)? 200: (iWholeWd>=0.9999?parentWd:iWholeWd*parentWd);
     } // else iWholeWd >= 1
     if (isNaN(iWholeHi) || iWholeHi < 0)
       iWholeHi = 60;
     else if (iWholeHi < 1) {
       var parentHi = self.state.parentHeight;
-      iWholeHi = isNaN(parentHi)? 60: iWholeHi * parentHi;
+      iWholeHi = isNaN(parentHi)? 60: (iWholeHi>=0.9999?parentHi:iWholeHi*parentHi);
     } // else iWholeHi >= 1
     
     if (imgNum == 1 && iStyle >= 0) {
