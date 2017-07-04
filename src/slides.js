@@ -887,7 +887,7 @@ class TDelayTimer_ extends T.P_ {
       if (canAct && self.$onClick && (node=self.getHtmlNode())) {
         if (window.getComputedStyle(node).visibility != 'hidden') {
           evt = document.createEvent('Event');
-          evt.target = node;
+          evt.target_ = node;
           self.$onClick(evt);
         }
       }
