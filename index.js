@@ -69,8 +69,8 @@ function getDefaultOpt_(self) {
   };
 }
 
-var TDrawPaper_ = function (_T$Panel_) {
-  _inherits(TDrawPaper_, _T$Panel_);
+var TDrawPaper_ = function (_T$Div_) {
+  _inherits(TDrawPaper_, _T$Div_);
 
   function TDrawPaper_(name, desc) {
     _classCallCheck(this, TDrawPaper_);
@@ -79,8 +79,12 @@ var TDrawPaper_ = function (_T$Panel_) {
     var _this = _possibleConstructorReturn(this, (TDrawPaper_.__proto__ || Object.getPrototypeOf(TDrawPaper_)).call(this, name || 'rewgt.DrawPaper', desc));
 
     _this._statedProp.push('defId', 'offsetX', 'offsetY');
+
+    _this._defaultProp.height = 0.9999;
+    _this._defaultProp.minHeight = 0;
     _this._defaultProp.offsetX = 0;
     _this._defaultProp.offsetY = 0;
+
     _this._silentProp.push('drawPaper.');
     return _this;
   }
@@ -108,9 +112,12 @@ var TDrawPaper_ = function (_T$Panel_) {
     key: 'getDefaultProps',
     value: function getDefaultProps() {
       var props = _get(TDrawPaper_.prototype.__proto__ || Object.getPrototypeOf(TDrawPaper_.prototype), 'getDefaultProps', this).call(this);
-      props['drawPaper.'] = true;
+      delete props.minHeight;
+      props.height = 0.9999;
+      props.minHeight = 0;
       props.offsetX = 0;
       props.offsetY = 0;
+      props['drawPaper.'] = true;
       return props;
     }
   }, {
@@ -127,26 +134,20 @@ var TDrawPaper_ = function (_T$Panel_) {
       this.defineDual('offsetX');
       this.defineDual('offsetY');
 
+      this.defineDual('id__', function (value, oldValue) {
+        if (value <= 2) return;
+
+        var dStyle = { margin: this.state.offsetY + 'px 0 0 ' + this.state.offsetX + 'px' };
+        var insertEle = React.createElement('div', { className: 'rewgt-paperview', style: dStyle });
+        utils.setChildren(this, null, insertEle);
+      });
+
       return state;
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      utils.syncProps(this);
-      if (this.hideThis) return null;
-
-      var bChild = this.prepareState();
-      var divStyle = { margin: this.state.offsetY + 'px 0 0 ' + this.state.offsetX + 'px' };
-      var div = React.createElement('div', { className: 'rewgt-paperview', style: divStyle }, bChild);
-
-      var dStyle = Object.assign({}, this.state.style, { backgroundPosition: this.state.offsetX + 'px ' + this.state.offsetY + 'px' });
-      var props = utils.setupRenderProp(this, dStyle);
-      return React.createElement('div', props, div);
     }
   }]);
 
   return TDrawPaper_;
-}(T.Panel_);
+}(T.Div_);
 
 T.rewgt.DrawPaper_ = TDrawPaper_;
 T.rewgt.DrawPaper = new TDrawPaper_();
@@ -333,17 +334,11 @@ function redrawSvg_(self) {
           iLen = arrowCfg.length;
       if (iLen < 8) return; // ['',0, 0,2, x,y, x,y]
 
-      var ownerComp = self.widget,
+      var ownerComp = self.parentOf(true),
           defId = 'mrk_';
       if (ownerComp) {
-        ownerComp = ownerComp.parent;
-        if (ownerComp) {
-          ownerComp = ownerComp.component;
-          if (ownerComp) {
-            var defId_ = ownerComp.state.defId;
-            if (defId_) defId = defId_; // must be string
-          }
-        }
+        var defId_ = ownerComp.state.defId;
+        if (defId_) defId = defId_; // must be string
       }
       defId += self.$gui.keyid + '';
 
@@ -598,8 +593,8 @@ function redrawSvg_(self) {
   }
 }
 
-var TSvgPanel_ = function (_T$Panel_2) {
-  _inherits(TSvgPanel_, _T$Panel_2);
+var TSvgPanel_ = function (_T$Panel_) {
+  _inherits(TSvgPanel_, _T$Panel_);
 
   function TSvgPanel_(name, desc) {
     _classCallCheck(this, TSvgPanel_);
@@ -662,7 +657,7 @@ var TSvgPanel_ = function (_T$Panel_2) {
       // state.style.backgroundRepeat = 'no-repeat'; // has move to css
 
       var inDsn = false;
-      if (W.__design__) inDsn = true;else if (underDesign(this.widget)) inDsn = true;
+      if (W.__design__) inDsn = true;else if (underDesign(this)) inDsn = true;
       if (inDsn && this.$gui.hasIdSetter) {
         this.undefineDual('id__'); // ignore $id__ for designing
         this.$gui.hasIdSetter = false;
@@ -744,10 +739,9 @@ var TSvgPanel_ = function (_T$Panel_2) {
         }, 0);
       }
 
-      function underDesign(wdgt) {
-        var ownerComp,
-            owner = wdgt && wdgt.parent;
-        if (owner && (ownerComp = owner.component) && ownerComp.props['data-design'] && ownerComp.props['drawPaper.']) return true;else return false;
+      function underDesign(comp) {
+        var ownerComp = comp.parentOf(true);
+        if (ownerComp && ownerComp.props['data-design'] && ownerComp.props['drawPaper.']) return true;else return false;
       }
     }
   }]);
@@ -826,8 +820,8 @@ var TPlayShell_ = function (_T$P_) {
 T.rewgt.PlayShell_ = TPlayShell_;
 T.rewgt.PlayShell = new TPlayShell_();
 
-var TGotoPage_ = function (_T$Div_) {
-  _inherits(TGotoPage_, _T$Div_);
+var TGotoPage_ = function (_T$Div_2) {
+  _inherits(TGotoPage_, _T$Div_2);
 
   function TGotoPage_(name, desc) {
     _classCallCheck(this, TGotoPage_);
@@ -997,7 +991,7 @@ var TDelayTimer_ = function (_T$P_2) {
         if (canAct && self.$onClick && (node = self.getHtmlNode())) {
           if (window.getComputedStyle(node).visibility != 'hidden') {
             evt = document.createEvent('Event');
-            evt.target = node;
+            evt.target_ = node;
             self.$onClick(evt);
           }
         }
@@ -1109,10 +1103,9 @@ function setupFrames_(pageCtrl, iCurr, withStepNext) {
   if (!pageCtrl.keys.length) return; // not ready yet
 
   if (last_step_player_) {
-    var slideWdgt,
-        wdgt = last_step_player_.widget,
-        stepDone = false;
-    if (wdgt && (slideWdgt = wdgt.parent)) {
+    var stepDone = false,
+        slideComp = last_step_player_.parentOf(true);
+    if (slideComp) {
       // still avaliable
       if (typeof last_step_player_.stepIsDone == 'function') {
         if (last_step_player_.stepIsDone()) {
@@ -1130,8 +1123,7 @@ function setupFrames_(pageCtrl, iCurr, withStepNext) {
     }
 
     if (stepDone) {
-      var slideComp = slideWdgt.component,
-          slideNode = slideComp && slideComp.getHtmlNode();
+      var slideNode = slideComp && slideComp.getHtmlNode();
       if (slideNode) checkJoinedStep(slideNode);
     }
     return;
