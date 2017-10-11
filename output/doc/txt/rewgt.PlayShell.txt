@@ -1,4 +1,4 @@
-PlayShell
+rewgt.PlayShell
 6.3.!play_shell
 [ duals ]
   data-auto: ''

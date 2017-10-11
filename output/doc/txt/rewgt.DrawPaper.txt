@@ -1,4 +1,4 @@
-DrawPaper
+rewgt.DrawPaper
 6.3.!draw_paper
 [ props ]
   data-inline: ''

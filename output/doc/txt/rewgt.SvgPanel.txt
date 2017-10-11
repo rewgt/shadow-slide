@@ -1,4 +1,4 @@
-SvgPanel
+rewgt.SvgPanel
 6.3.!svg_panel
 [ duals ]
   rotate: 0
