@@ -5,7 +5,11 @@ var ReactDOM = require('react-dom');
 var W = require('shadow-widget');
 
 var T = W.$templates, creator = W.$creator;
-var utils = W.$utils, ex = W.$ex, main = W.$main;
+var utils = W.$utils, ex = W.$ex, main = W.$main, idSetter = W.$idSetter;
+
+idSetter['.rewgt.shadow-slide.version'] = function() {
+  return '1.1.2';
+};
 
 var TRANS_END_FUNC   = '';
 var TRANS_CSS_NAME   = '';
