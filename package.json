@@ -1,24 +1,29 @@
 {
   "name": "shadow-slide",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A PPT-like document creator that powered by shadow-widget",
   "main": "index.js",
   "scripts": {
-    "start": "watchify src/index_dev.js -v -o bundle.js -t [ babelify --presets [ es2015 react ] ]",
+    "start": "watchify src/index_dev.js -v -o bundle.js -t [ babelify --presets [ env react ] ]",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rewgt/shadow-slide.git"
+  },
+  "author": "wayne chan",
+  "license": "BSD-3-Clause",
   "devDependencies": {
-    "babel-preset-es2015": "~6.24.0",
-    "babel-preset-react": "~6.24.0",
-    "babelify": "~7.3.0",
+    "babel-core": "~6.26.0",
+    "babel-preset-env": "~1.6.1",
+    "babel-preset-react": "~6.24.1",
+    "babelify": "~8.0.0",
     "watchify": "~3.9.0"
   },
   "dependencies": {
-    "react": "~15.6.0",
-    "react-dom": "~15.6.0",
-    "create-react-class": "~15.6.0",
+    "react": "~16.2.0",
+    "react-dom": "~16.2.0",
+    "create-react-class": "~15.6.2",
     "shadow-widget": "~1.1.0"
   }
 }

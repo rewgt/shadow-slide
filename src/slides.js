@@ -8,7 +8,7 @@ var T = W.$templates, creator = W.$creator;
 var utils = W.$utils, ex = W.$ex, main = W.$main, idSetter = W.$idSetter;
 
 idSetter['.rewgt.shadow-slide.version'] = function() {
-  return '1.1.2';
+  return '1.1.3';
 };
 
 var TRANS_END_FUNC   = '';
